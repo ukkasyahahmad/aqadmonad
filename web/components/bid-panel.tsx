@@ -35,7 +35,7 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
 
   const bidTx = useTx(quickMode ? burner.account : null);
   const withdrawTx = useTx(quickMode ? burner.account : null);
-  const settleTx = useTx(quickMode ? burner.account : null);
+  const settleTx = useTx(); // only the seller closes, from the MetaMask wallet that listed the item
   const cancelTx = useTx();
   const { data: owedRaw, refetch: refetchOwed } = useReadContract({
     address: auctionHouse?.address,
@@ -71,6 +71,7 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
   const left = now === null ? null : Number(lot.endTime) - now;
   const me = address?.toLowerCase();
   const isSeller = !!me && me === lot.seller.toLowerCase();
+  const sellerWallet = !!walletAddress && walletAddress.toLowerCase() === lot.seller.toLowerCase();
   const isLeader = !!me && lot.highestBidder !== ZERO && me === lot.highestBidder.toLowerCase();
   const pending = bidTx.busy;
   const hasBids = lot.highestBid > 0n;
@@ -133,17 +134,23 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
           </Notice>
         ) : (
           <div className="space-y-3">
-            <Notice tone="warning" title="Time is up — settlement pending">
-              The countdown reached zero on-chain, but nothing moves until someone sends the settlement transaction. Anyone can.
-            </Notice>
-            <SignerGate quick={quickMode} burnerReady={!!burner.account && burner.balance > 0n} action="settle">
-              <Btn className="w-full" variant="dark" loading={settleTx.busy} disabled={settleTx.busy} onClick={async () => {
-                await settleTx.send({ address: auctionHouse!.address, abi: auctionHouse!.abi, functionName: "endAuction", args: [lot.id] });
-                onChanged();
-              }}>
-                {settleTx.phase === "signing" ? "Confirm in wallet…" : settleTx.phase === "confirming" ? "Settling on Monad…" : "End auction & settle"}
-              </Btn>
-            </SignerGate>
+            {sellerWallet ? (
+              <>
+                <Notice tone="warning" title="Time is up — close your auction">
+                  Nothing moves until you send the closing transaction: the NFT goes to the winner and the MON to you.
+                </Notice>
+                <Btn className="w-full" variant="dark" loading={settleTx.busy} disabled={settleTx.busy} onClick={async () => {
+                  await settleTx.send({ address: auctionHouse!.address, abi: auctionHouse!.abi, functionName: "endAuction", args: [lot.id] });
+                  onChanged();
+                }}>
+                  {settleTx.phase === "signing" ? "Confirm in wallet…" : settleTx.phase === "confirming" ? "Closing on Monad…" : "Close auction & settle"}
+                </Btn>
+              </>
+            ) : (
+              <Notice tone="warning" title="Time is up — waiting for the seller">
+                Bidding is closed. The seller closes the auction, which sends the NFT to the winner and the MON to the seller.
+              </Notice>
+            )}
             {settleTx.error && <Notice tone="danger">{settleTx.error}</Notice>}
           </div>
         )}

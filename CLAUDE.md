@@ -2,7 +2,7 @@
 
 Live NFT auction for Monad Blitz Jogja (24 Oct 2026). Coding from 12:00, **freeze 18:00**. It must run live on **Monad testnet** at a real Vercel URL (https://aqadmonad.vercel.app) with real MetaMask pop-ups. The product name in the UI is "Aqad".
 
-**What it is:** sell anything by minting it as an NFT and auctioning it for native MON. Every bid locks real MON in the contract. When someone outbids you, your full bid is credited to you and you withdraw it in one tap (pull payment). Once the clock runs out, anyone can call `endAuction()`, which sends the NFT to the winner and the MON to the seller in one transaction. Not betting: no bid fees, outbid bidders get 100% back, no randomness. Never use gambling words in the UI ("win big", "jackpot", "lucky").
+**What it is:** sell anything by minting it as an NFT and auctioning it for native MON. Every bid locks real MON in the contract. When someone outbids you, your full bid is credited to you and you withdraw it in one tap (pull payment). Once the clock runs out, the seller closes the auction with `endAuction()`, which sends the NFT to the winner and the MON to the seller in one transaction. Not betting: no bid fees, outbid bidders get 100% back, no randomness. Never use gambling words in the UI ("win big", "jackpot", "lucky").
 
 Fahim is a full-stack dev, new to Solidity. Keep the contract small, commented and explainable. Prefer less code everywhere.
 
@@ -58,7 +58,7 @@ Until a testnet deploy exists, every page shows "No AuctionHouse deployment foun
 - `createAuction(nft, tokenId, minPrice, duration) → id`: seller approves first; checks ERC-165, ownership and approval, then pulls the NFT into escrow with `safeTransferFrom` and verifies escrow. Records `createdAtBlock[id]`. Emits `AuctionCreated`.
 - `bid(id) payable nonReentrant`: reverts if not active, expired, seller bidding, already the top bidder, or `msg.value < minNextBid` (`BidTooLow(amount, required)`). Credits the previous top bid to `pendingReturns[prev]`; **sends no MON out**, so a hostile bidder can't block bids. A bid with < 60 s left sets `endTime = now + 60 s`. Emits `BidPlaced(id, bidder, amount, newEndTime)`.
 - `withdraw()`: pays out `pendingReturns[msg.sender]`; zeroes the credit before the call and reverts on failure, so the credit is restored. Emits `Withdrawn`.
-- `endAuction(id)`: anyone, after `endTime`, once. NFT to the winner, MON to the seller, atomically; with no bids the NFT goes back to the seller. A failed transfer reverts the whole call, so the auction stays Active. Emits `AuctionEnded`.
+- `endAuction(id)`: after `endTime`, once. The contract lets anyone call it, but the UI only offers it to the seller (`/host` and the seller's MetaMask on `/auction/[id]`); everyone else sees "waiting for the seller". NFT to the winner, MON to the seller, atomically; with no bids the NFT goes back to the seller. A failed transfer reverts the whole call, so the auction stays Active. Emits `AuctionEnded`.
 - `cancelAuction(id)`: seller only, before any bid; returns the NFT. Emits `AuctionCancelled`.
 - `minNextBid(id) view`: `highestBid == 0 ? minPrice : highestBid + ceil(highestBid × 5%)`.
 - `onERC721Received` accepts only NFTs the contract pulls in itself (`UnsolicitedNFT` otherwise).

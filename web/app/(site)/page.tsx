@@ -38,7 +38,7 @@ export default function Home() {
           </h1>
           <p className="max-w-xl text-muted-foreground">
             Photograph an item, mint it as an NFT listing, and run a live auction. Outbid bidders get every wei back,
-            late bids extend the clock, and anyone can settle when time runs out.
+            late bids extend the clock, and the seller closes the auction when time runs out.
           </p>
         </div>
         <div className="flex gap-3">
@@ -93,7 +93,7 @@ export default function Home() {
         {[
           ["1 · Escrow", "The seller's NFT moves into the AuctionHouse contract when the auction starts."],
           ["2 · Bid & refund", "Each bid must beat the last by 5%. Outbid MON is credited to you and withdrawable any time."],
-          ["3 · Settle", "After the deadline anyone can settle: the NFT goes to the winner, MON goes to the seller, atomically."],
+          ["3 · Settle", "After the deadline the seller closes the auction: the NFT goes to the winner, MON goes to the seller, atomically."],
         ].map(([t, d]) => (
           <Card key={t}>
             <p className="font-semibold">{t}</p>
