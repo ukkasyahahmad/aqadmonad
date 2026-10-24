@@ -9,7 +9,9 @@ const FAUCET_URL = "https://agents.devnads.com/v1/faucet";
 const CAP = Number(process.env.DRIP_CAP ?? 60);
 const MIN_BALANCE = parseEther("0.5");
 const IP_WINDOW_MS = 60_000;
-const IP_MAX = 3;
+// A whole venue shares one public IP on its Wi-Fi, so this is only a burst guard; the real
+// limits are one drip per address, the global DRIP_CAP and the on-chain balance check.
+const IP_MAX = Number(process.env.DRIP_IP_PER_MIN ?? 40);
 
 const funded = new Set<string>();
 const ipHits = new Map<string, number[]>();

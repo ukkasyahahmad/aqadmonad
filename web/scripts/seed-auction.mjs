@@ -1,7 +1,7 @@
 // Stages a live demo auction on Monad Testnet without touching anyone's real keys:
 // a throwaway key is generated in memory (never printed or saved), funded with 1 test MON
 // from the MONSKILLS faucet, then mints a DemoNFT with metadata, approves and lists it.
-// Usage: [APP_URL=https://your-app] node scripts/seed-auction.mjs [minutes=3] [name="Leica M6 rangefinder kit"]
+// Usage: [APP_URL=https://your-app] [FAUCET_URL=https://your-app/api/faucet] node scripts/seed-auction.mjs [minutes=3] [name="Leica M6 rangefinder kit"]
 import { createPublicClient, createWalletClient, http, parseEther, parseEventLogs } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { monadTestnet } from "viem/chains";
@@ -19,7 +19,9 @@ const pub = createPublicClient({ chain: monadTestnet, transport });
 const account = privateKeyToAccount(generatePrivateKey());
 const wallet = createWalletClient({ account, chain: monadTestnet, transport });
 
-const res = await fetch("https://agents.devnads.com/v1/faucet", {
+// FAUCET_URL lets you go through the app's own /api/faucet when this machine's IP is rate-limited.
+const faucetUrl = process.env.FAUCET_URL ?? "https://agents.devnads.com/v1/faucet";
+const res = await fetch(faucetUrl, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ chainId: 10143, address: account.address }),
