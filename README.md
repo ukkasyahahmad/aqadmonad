@@ -2,147 +2,225 @@
 
 > **Unaudited. Testnet only. Do not use with real assets.**
 
-Photograph an item, mint it as an NFT, and auction it live for MON. Phones scan a QR code and
-bid in one tap; the big screen updates in real time; outbid bidders get every wei back; late
-bids extend the clock; anyone can settle when time runs out.
+Photograph an item, mint it as an NFT, and auction it live for MON. The audience scans one QR
+code and bids from their phones in a tap — no app, no wallet setup. The big screen shows the
+countdown, a live leaderboard and Monad's speed measured in real time. Outbid bidders get every
+wei back, late bids extend the clock, and settlement moves the NFT and the MON in one transaction.
 
 Built for **Monad Blitz Jogja (24 Oct 2026)** with [MONSKILLS](https://skills.devnads.com).
 
 | | |
 |---|---|
-| Live app | https://aqadmonad.vercel.app |
+| **Live app** | https://aqadmonad.vercel.app |
+| **Join the running auction (one QR for the event)** | https://aqadmonad.vercel.app/live |
 | Network | Monad Testnet · chain ID `10143` · RPC `https://testnet-rpc.monad.xyz` |
-| AuctionHouse | [`0x997a70a4eee09541F2079ab871C13A7778b58164`](https://testnet.monadvision.com/address/0x997a70a4eee09541F2079ab871C13A7778b58164) (block 73734653) · verified: MonadVision perfect match, Monadscan |
-| DemoNFT | [`0x9765f91714AE866D1ce406A5922e0641B1F20AE9`](https://testnet.monadvision.com/address/0x9765f91714AE866D1ce406A5922e0641B1F20AE9) (block 73734651) · verified: MonadVision perfect match, Monadscan |
-| Explorer | https://testnet.monadvision.com |
+| **AuctionHouse** | [`0x997a70a4eee09541F2079ab871C13A7778b58164`](https://testnet.monadvision.com/address/0x997a70a4eee09541F2079ab871C13A7778b58164) · verified (MonadVision perfect match, Monadscan) |
+| **DemoNFT** | [`0x9765f91714AE866D1ce406A5922e0641B1F20AE9`](https://testnet.monadvision.com/address/0x9765f91714AE866D1ce406A5922e0641B1F20AE9) · verified (MonadVision perfect match, Monadscan) |
+| Source | https://github.com/ukkasyahahmad/aqadmonad |
 
-## What it does
+## Try it in one minute
 
-- **Sell an item** (`/create`): 7-step wizard — category, details, photo, price & duration,
-  review, then three real transactions: mint the item NFT → approve → create the auction.
-- **Bid** (`/auction/[id]`): confirm dialog, pending, leading, “price changed” recovery,
-  ended/cancelled states — every state comes from the chain or a real transaction.
-- **Quick-bid wallet**: phones without a wallet get a throwaway in-browser key, funded with
-  1 test MON from the monskills faucet API. Bids are signed locally and sent with
-  `eth_sendRawTransactionSync`, so the receipt comes back in the same request; the UI shows
-  the measured latency. MetaMask works too.
-- **Audience screen** (`/screen/[id]`): 16:9, 20vh countdown from chain time, QR to the bid
-  page, live bid feed over WebSocket `monadLogs`, anti-sniping flash, final result.
-- **Host console** (`/host`): your auctions with QR, screen link, settle and cancel.
-- **Account** (`/account`): your leading bids, your listings, watchlist; outbid refunds
-  appear in a banner with a one-click withdraw.
+1. Open **https://aqadmonad.vercel.app/live** on your phone (or scan the QR on any audience screen).
+2. Tap **Create quick-bid wallet** → **Get 1 test MON** (free, from the MONSKILLS faucet).
+3. Tap **Review bid** → **Confirm bid**. The receipt comes back in about a second.
+4. If someone outbids you, your phone shows **“You've been outbid!”** with **Bid again** and
+   **Withdraw** buttons.
+
+No auction running? Start one at `/create` with MetaMask, or stage one from the command line
+(see [Stage a demo auction](#stage-a-demo-auction)).
+
+## Pages
+
+| Route | Who | What it does |
+|---|---|---|
+| `/` | everyone | Gallery of the latest 24 auctions with live status and countdowns |
+| `/live` | audience | **One permanent QR target.** Shows the running lot and follows the next one automatically; if several run at once, the viewer picks |
+| `/auction/[id]` | bidders | Bid panel (confirm dialog, pending, leading, price-changed, outbid, won/lost), on-chain bid history, token details, per-lot QR |
+| `/screen/[id]` | projector | 16:9 audience screen: huge countdown, QR, leaderboard, participant count, bid flash, anti-sniping flash, confetti on SOLD, optional gavel sound, Monad speed panel |
+| `/create` | sellers | 7-step wizard: category → details → photo → price & duration → review → mint → approve → create |
+| `/host` | sellers | Your auctions with QR, audience-screen link, settle and cancel |
+| `/account` | everyone | Your leading bids, your listings, watchlist |
 
 ## Monad features used
 
-| Monad feature | Where |
-|---|---|
-| `eth_sendRawTransactionSync` (receipt in one RPC call) | Quick-bid wallet writes (`web/hooks/use-tx.ts`, viem `writeContractSync`) |
-| `monadLogs` WebSocket subscription (logs at *Proposed* state) | Audience screen live feed (`web/hooks/use-live-bids.ts`) |
-| ~400 ms blocks, 1-second `block.timestamp` | Countdown anchored to the latest block, ticking locally (`use-chain-time.ts`) |
-| Gas charged on **gas limit** | Every write uses `estimateGas` from a Monad node + 10% (no blanket limits) |
-| Reserve balance / async execution | 1.5 s wait after funding and after each bid from a low-balance wallet |
-| `eth_getLogs` 100-block limit | Bid history scanned in 100-block windows from the auction's creation block |
+| Monad feature | How Aqad uses it | Where |
+|---|---|---|
+| `eth_sendRawTransactionSync` — receipt in the same RPC call | Quick-bid wallets sign in the browser and get the receipt back in one request; the UI shows the measured time | `web/hooks/use-tx.ts` |
+| `monadLogs` WebSocket — logs at the *Proposed* stage | The audience screen shows a bid before the bidder's own receipt arrives; reconnects with backoff, falls back to polling | `web/hooks/use-live-bids.ts` |
+| ~0.3–0.4 s blocks | Measured live on the screen from block cadence (no hard-coded number) | `web/hooks/use-block-rate.ts` |
+| Fast confirmation | **Speed probe**: the screen's own wallet sends a 0-MON self-transfer every 15 s via `eth_sendRawTransactionSync` and displays the real send→receipt time | `web/hooks/use-speed-probe.ts` |
+| Gas charged on the **gas limit** | Every write uses `eth_estimateGas` from a Monad node + 10% (no blanket limits) | `web/hooks/use-tx.ts` |
+| Reserve balance / async execution | 1.5 s pause after funding and between transactions of a low-balance (< 10 MON) wallet | `use-burner.ts`, `bid-panel.tsx` |
+| 1-second `block.timestamp` | Countdowns anchor to the latest block timestamp and tick locally | `web/hooks/use-chain-time.ts` |
+| `eth_getLogs` 100-block limit | Bid history scanned in 100-block windows from the auction's creation block, ≤ 4 requests in flight | `web/hooks/use-bid-history.ts` |
 
 ## How the auction works
 
-- **Escrow**: the NFT moves into `AuctionHouse` when the auction is created.
-- **Bids**: first bid ≥ starting price; each next bid ≥ previous + 5% (rounded up).
-- **Refunds (pull payments)**: when you are outbid, your full bid is credited to
-  `pendingReturns`; withdraw any time. `bid()` never sends MON out, so a hostile bidder
-  cannot block others.
-- **Anti-sniping**: a bid with < 60 s left moves the end to 60 s after that bid.
-- **Settlement**: after the end time, *anyone* calls `endAuction`. NFT → winner, MON → seller,
-  atomically (or NFT back to the seller if there were no bids). Expiry alone settles nothing.
-- **Cancel**: the seller can cancel only before the first bid.
+| Rule | Enforced by the contract |
+|---|---|
+| Escrow | The seller's NFT moves into `AuctionHouse` when the auction is created |
+| First bid | ≥ the starting price |
+| Next bids | ≥ current highest bid + 5% (rounded **up**) |
+| Bid again after being outbid | Allowed, any number of times |
+| Raise your own winning bid | Not allowed (`AlreadyHighestBidder`) — you can't bid against yourself |
+| Seller bids on own lot | Not allowed |
+| Anti-sniping | A bid with < 60 s left moves the end to 60 s after that bid |
+| Refunds | When outbid, your **full** bid is credited to `pendingReturns`; withdraw any time (pull payment) |
+| Settlement | After the end time, `endAuction` sends the NFT to the winner and the MON to the seller **atomically** (no bids → NFT back to the seller). On-chain anyone may call it; the UI shows the button to the seller |
+| Cancel | Seller only, and only before the first bid |
+
+### Security
+
+- **Pull payments** — `bid()` never sends MON out, so a bidder whose wallet rejects MON cannot block anyone else.
+- **Checks-Effects-Interactions + `nonReentrant`** — balances are zeroed *before* MON is sent and every state-changing function is guarded, so nothing can be withdrawn or settled twice (the class of bug behind the 2016 DAO hack).
+- **Atomic settlement** — if any transfer fails the whole call reverts; nothing is half-settled.
+- **No admin** — no owner, pause, upgrade or rescue function. Nobody, including us, can move escrowed NFTs or MON outside the rules.
+- **Tested invariant** — contract balance ≥ active top bids + pending refunds, exactly equal unless MON is force-sent; checked over 128,000 random transactions.
 
 Plain-English walkthrough of every function: [`contracts/EXPLAIN.md`](contracts/EXPLAIN.md).
 
 ## Architecture
 
 ```
-contracts/                 Foundry (solc 0.8.28, OpenZeppelin 5.4)
-  src/AuctionHouse.sol     auction + escrow + pull refunds (no admin functions)
-  src/DemoNFT.sol          free-mint ERC-721 with optional on-chain metadata
-  test/                    unit, fuzz and stateful invariant tests
-  script/Deploy.s.sol      deploy DemoNFT, AuctionHouse, mint 3 demo NFTs to the deployer
-  script/deploy-testnet.sh Monad Testnet deploy with an encrypted Foundry keystore
-web/                       Next.js 16 App Router, wagmi 3, viem 2.57, Tailwind 4
-  lib/        domain + infrastructure: auction rules, formatting, chain/RPC, contracts,
-              metadata codec, burner wallet  (no React)
-  hooks/      application layer: data fetching, tx lifecycle, chain time, live feed
-  components/ presentation (design tokens from html-design / Design.md)
-  app/        routes; app/api/{upload,faucet} are the only server code
-  contracts/abis.ts, deployedContracts.ts   generated ABIs + Monad Testnet addresses
+contracts/                   Foundry (solc 0.8.28, evm prague, OpenZeppelin 5.4)
+  src/AuctionHouse.sol       auction + escrow + pull refunds; no admin functions
+  src/DemoNFT.sol            free-mint ERC-721; mintWithURI stores item metadata on-chain
+  test/                      unit + fuzz (AuctionHouse.t.sol, DemoNFT.t.sol), stateful invariants
+  script/Deploy.s.sol        DemoNFT → AuctionHouse → 3 demo NFTs to the deployer
+  script/deploy-testnet.sh   Monad Testnet deploy with an encrypted Foundry keystore
+  EXPLAIN.md                 one paragraph per function
+web/                         Next.js 16 App Router, React 19, wagmi 3, viem 2.57, Tailwind 4
+  lib/         no React: chain/RPC config, contract bindings, auction rules, formatting,
+               on-chain metadata codec, quick-bid wallet, sound
+  hooks/       data + transactions: auctions, bid history, live feed, chain time,
+               tx lifecycle, quick-bid wallet, block rate, speed probe, watchlist
+  components/  UI (design from html-design/ and Design.md)
+  app/         routes; app/api/{faucet,upload} are the only server code
+  contracts/   abis.ts + deployedContracts.ts, GENERATED by `pnpm contracts:export`
+  scripts/     export-contracts.mjs, seed-auction.mjs
 ```
 
-Contract addresses are never hard-coded in components: `pnpm contracts:export` reads the Foundry
-artifacts and the Monad Testnet broadcast, and writes `web/contracts/abis.ts` and
-`web/contracts/deployedContracts.ts`.
+- **No hard-coded contract addresses in the UI**: `pnpm contracts:export` reads the Foundry
+  artifacts and `contracts/broadcast/Deploy.s.sol/10143/run-latest.json` and writes
+  `web/contracts/abis.ts` and `web/contracts/deployedContracts.ts`.
+- **All auction data comes from the chain** (contract reads + `BidPlaced` events). The only
+  off-chain data is item photos (Vercel Blob; their URL is stored in the NFT's on-chain metadata)
+  and the per-browser watchlist.
 
 ## Run it locally
 
-Requirements: Node 20+, pnpm, Foundry ≥ 1.8. The web app always talks to **Monad Testnet**
-(official RPCs + `wss://testnet-rpc.monad.xyz`); there is no local-chain mode in the UI.
+Requirements: **Node 20+**, **pnpm**, **Foundry ≥ 1.8**. The web app talks to the deployed
+contracts on Monad Testnet; no local chain or configuration is needed.
 
 ```sh
-# contracts: build + tests (Foundry runs these in its own in-memory EVM)
-cd contracts
-./install-deps.sh                 # OpenZeppelin v5.4.0 + forge-std v1.17.0 into lib/
-forge build
-forge test                        # 52 unit/fuzz tests + 4 invariants
+git clone https://github.com/ukkasyahahmad/aqadmonad.git && cd aqadmonad
 
-# web: runs against the deployed Monad Testnet contracts
+# contracts: dependencies, build, tests
+cd contracts
+./install-deps.sh          # OpenZeppelin v5.4.0 + forge-std v1.17.0 into lib/
+forge build
+forge test                 # 52 unit/fuzz tests + 4 invariants (Foundry reports the invariant suite as 1)
+
+# web app
 cd ../web
 pnpm install
-pnpm dev                          # http://localhost:3000
+pnpm dev                   # http://localhost:3000
 ```
 
-Photo uploads need `BLOB_READ_WRITE_TOKEN` in `web/.env.local` (`vercel env pull`);
-everything else works without configuration.
+Optional environment (`web/.env.local`, see `web/.env.example`):
 
-## Deploy to Monad Testnet
+| Variable | Needed for | Default |
+|---|---|---|
+| `BLOB_READ_WRITE_TOKEN` | Photo upload in `/create` (Vercel Blob; `vercel env pull`) | upload disabled, generated artwork used |
+| `NEXT_PUBLIC_RPC_URL` | Preferred RPC endpoint | official Monad Testnet RPCs with fallback |
+| `DRIP_CAP` | Max wallets funded by `/api/faucet` | 60 |
 
-Keys never touch this repo or the agent. Two options:
+Other checks: `pnpm typecheck`, `pnpm lint`, `pnpm build`.
 
-- **Foundry keystore**: `cast wallet import deployer --interactive`, fund it from the
-  official faucet https://faucet.monad.xyz (listed at
-  [docs.monad.xyz/developer-essentials/testnets](https://docs.monad.xyz/developer-essentials/testnets)), then
-  `forge script script/Deploy.s.sol --rpc-url https://testnet-rpc.monad.xyz --account deployer --broadcast`.
-- **MONSKILLS Agent Wallet**: CREATE2 through CreateX with the Alchemy CLI session signer.
+## Stage a demo auction
 
-Then `cd web && pnpm contracts:export`, verify via the MONSKILLS verification API, and
-deploy `web/` to Vercel. Vercel env: `BLOB_READ_WRITE_TOKEN` (photo uploads), optional
-`NEXT_PUBLIC_RPC_URL`.
+Creates a real auction on Monad Testnet without using anyone's key: a throwaway key is
+generated in memory (never printed or saved), funded with 1 test MON by the MONSKILLS faucet,
+then it mints an item NFT, approves and lists it.
 
-## Two-minute demo
+```sh
+cd web
+node scripts/seed-auction.mjs 3 "Leica M6 rangefinder kit"   # minutes, item name
+# → Auction #N live for 3 min … bid: …/auction/N  screen: …/screen/N
+```
 
-1. Host opens `/create`, taps **Fill demo listing**, adds a photo, publishes (mint → approve →
-   create). The confirmation shows the auction QR.
-2. Open `/screen/<id>` on the projector. Two phones scan the QR → **Get 1 test MON** → bid.
-3. Phone B outbids A. A sees **“Outbid — withdraw … MON refund”** and withdraws.
-4. Bid in the final 60 s → the screen flashes the anti-sniping extension.
-5. At zero the state reads **Awaiting settlement**; anyone taps **End auction & settle**.
-6. Show the NFT owner (winner) and the seller's proceeds via the explorer links.
+Set `APP_URL` to print links for another deployment.
 
-## Verified so far
+## Deploy your own
+
+1. **Wallet** — `cast wallet import deployer --interactive` (the key stays encrypted), then fund it
+   from the official faucet https://faucet.monad.xyz
+   ([docs](https://docs.monad.xyz/developer-essentials/testnets)).
+2. **Contracts** — `./contracts/script/deploy-testnet.sh deployer`
+   (deploys, mints 3 demo NFTs, runs `pnpm contracts:export`).
+3. **Verify** — with the MONSKILLS verification API (MonadVision + Monadscan in one call):
+   ```sh
+   cd contracts
+   forge verify-contract <ADDRESS> src/AuctionHouse.sol:AuctionHouse --chain 10143 --show-standard-json-input > std.json
+   jq -n --arg a <ADDRESS> --slurpfile s std.json --argjson m "$(jq .metadata out/AuctionHouse.sol/AuctionHouse.json)" \
+     '{chainId:10143, contractAddress:$a, contractName:"src/AuctionHouse.sol:AuctionHouse",
+       compilerVersion:"v0.8.28+commit.7893614a", standardJsonInput:$s[0], foundryMetadata:$m}' > verify.json
+   curl -X POST https://agents.devnads.com/v1/verify -H "Content-Type: application/json" -d @verify.json
+   ```
+   Repeat for `src/DemoNFT.sol:DemoNFT`.
+4. **Web** — deploy `web/` to Vercel (`vercel deploy --prod`) and add `BLOB_READ_WRITE_TOKEN`
+   (`vercel blob create-store <name> --access public` links it automatically).
+
+## Three-minute demo
+
+**Before going on stage**
+- Host wallet (MetaMask) holds **more than 10 MON** (Monad reserve-balance rule).
+- Create the lot 5 minutes before (`/create` or `seed-auction.mjs`), plus one spare lot.
+- Projector: `/screen/<id>` in fullscreen; turn sound on (speaker icon); start the speed probe.
+- Slide or printout with the QR for **`/live`**. Phone hotspot as a Wi-Fi backup.
+
+**On stage**
+1. *Problem (20 s)* — auctions at events are slow and need trust in the auctioneer.
+2. *Audience joins (40 s)* — everyone scans the QR → **Get 1 test MON** → bids. The screen's
+   leaderboard and wallet count climb; each bid flashes on screen.
+3. *Bidding war (40 s)* — outbid phones buzz with **Bid again**; point at the refund: the old
+   bid is credited in full, in the same transaction that outbid it.
+4. *Anti-sniping (20 s)* — a bid in the last minute pushes the clock back to 60 s.
+5. *Why Monad (30 s)* — the speed panel: block time and confirmation time measured live,
+   versus Ethereum's ~12 s blocks.
+6. *Settle (30 s)* — at zero the seller taps **Close auction & settle**: SOLD, confetti, the
+   winner's phone shows **You won!**; open the transaction on the explorer.
+
+## Verified
 
 | Check | Result |
 |---|---|
-| `forge build` | passes |
-| `forge test` | 52 unit/fuzz + 4 invariants pass (128,000 invariant calls, 0 reverts) |
-| `pnpm typecheck`, `pnpm lint`, `pnpm build` | pass |
-| Browser E2E on a local anvil chain (before switching the app to testnet-only): create → bid → outbid → withdraw → expire → settle | passed; NFT owner = winner, contract balance 0 after settlement |
-| `eth_sendRawTransactionSync`, `monadLogs` WebSocket, monskills faucet — probed on Monad Testnet | work (sync receipt 997 ms from Jogja; faucet sent 1 MON) |
-| Testnet deployment | done (24 Oct 2026, deployer `0x6265…Ff75`) |
-| Verification (MONSKILLS verify API) | both contracts: MonadVision “perfect match”; Monadscan shows the source as a Similar Match (identical bytecode was already verified there) |
-| Testnet E2E in a browser with MetaMask: `/create` mint → approve → create (auction #1) | passed; token #4 escrowed in AuctionHouse; `endAuction(1)` with no bids returned it to the seller |
-| Testnet E2E bidding (auction #2): quick-bid 0.05 → MetaMask outbid 0.0525 → quick-bid withdraw → settle from the page | passed; sync receipt 763 ms; `Withdrawn` 0.05 MON; NFT owner = winner; seller paid; AuctionHouse balance 0 |
-| Audience screen live feed on testnet (auction #3) | `monadLogs` WebSocket live; bid on screen 0.67 s after the phone tapped Confirm (before its own receipt), anti-sniping flash at 1.3 s; history after a reload in ~2 s |
+| Fresh clone of this repo → `./install-deps.sh`, `forge build`, `forge test` | pass — 52 unit/fuzz tests + 4 invariants (256 runs × 128,000 calls, 0 reverts) |
+| Fresh clone → `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, all routes HTTP 200 with no `.env` | pass |
+| Fresh clone → `pnpm contracts:export` | reproduces the committed `abis.ts` / `deployedContracts.ts` exactly |
+| Testnet deployment + verification | both contracts verified via the MONSKILLS API (MonadVision “perfect match”; Monadscan verified) |
+| `/create` with MetaMask: mint → approve → create (auction #1) | passed; NFT escrowed; no-bid `endAuction` returned it to the seller |
+| Bidding (auction #2): quick-bid 0.05 → MetaMask outbid 0.0525 → withdraw → settle | passed; sync receipt 763 ms; `Withdrawn` 0.05 MON; NFT owner = winner; seller paid; AuctionHouse balance 0 |
+| Audience screen (auction #3) | `monadLogs` live; bid on screen 0.67 s after Confirm, before the bidder's own receipt |
+| Production site, phone viewport (auction #7): quick-bid wallet → faucet → bid | passed; faucet sent 1 MON; bid confirmed in 1,523 ms |
+| `/live` + outbid flow (auction #8): A bids → B outbids → A sees the outbid alert → **Bid again** | passed; A leads again at 0.011025 MON; alert persists across reloads (read from on-chain refunds) |
+| Speed probe on testnet | 0-MON self-transfer confirmed via `eth_sendRawTransactionSync` in 1.10 s; measured block time 0.27–0.32 s |
+| Not verified | vibration and the **You won!** banner on a physical phone; MetaMask mobile deep link |
 
 ## Limitations
 
-- Unaudited. Faucet and upload rate limits are in-memory (per serverless instance).
-- Quick-bid wallet keys live in browser `localStorage` — fine for test MON, never for real funds.
-- A seller that rejects MON or a winning contract that rejects NFTs blocks settlement (assets
-  remain escrowed and accounted for). See `EXPLAIN.md`.
+- Unaudited; testnet only.
+- Quick-bid wallet keys live in the browser's `localStorage` — fine for test MON, never for real funds.
+- Faucet and upload rate limits are in-memory (per serverless instance).
+- Rebidding needs a fresh deposit; the earlier bid stays withdrawable (the quick-bid wallet
+  withdraws it automatically first when its balance is short).
+- A seller that rejects MON or a winning contract that rejects NFTs blocks settlement; assets
+  stay escrowed and fully accounted for (see `contracts/EXPLAIN.md`).
+- For physical items the NFT is a listing record; delivery happens off-chain.
 - The gallery shows the latest 24 auctions.
+
+## Built with
+
+[MONSKILLS](https://skills.devnads.com) (scaffold, gas, concepts, verification API, faucet API) ·
+Foundry · OpenZeppelin Contracts 5.4 · Next.js · wagmi · viem · Vercel. Design from `Design.md`
+and `html-design/`.
