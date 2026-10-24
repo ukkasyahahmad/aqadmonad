@@ -29,7 +29,9 @@ export type BidEvent = {
  */
 export function useBidHistory(id: bigint | null, fromBlock: bigint | undefined) {
   const client = usePublicClient();
-  const state = useRef<{ key: string; cursor: bigint; bids: BidEvent[] } | null>(null);
+  // Map keyed by txHash-logIndex: overlapping refreshes (e.g. invalidate during an interval
+  // fetch) may scan the same window twice, so storage must be idempotent.
+  const state = useRef<{ key: string; cursor: bigint; bids: Map<string, BidEvent> } | null>(null);
   const key = `${auctionHouse?.address}:${id}`;
 
   return useQuery({
@@ -37,7 +39,7 @@ export function useBidHistory(id: bigint | null, fromBlock: bigint | undefined) 
     enabled: Boolean(client && auctionHouse && id !== null && fromBlock !== undefined),
     refetchInterval: 2000,
     queryFn: async () => {
-      if (state.current?.key !== key) state.current = { key, cursor: fromBlock!, bids: [] };
+      if (state.current?.key !== key) state.current = { key, cursor: fromBlock!, bids: new Map() };
       const s = state.current;
       const latest = await client!.getBlockNumber();
       // Each window is one ~0.6 s round trip, so fetch this refresh's windows in parallel.
@@ -57,7 +59,7 @@ export function useBidHistory(id: bigint | null, fromBlock: bigint | undefined) 
         );
       }
       for (const l of results.flat()) {
-        s.bids.push({
+        s.bids.set(`${l.transactionHash}-${l.logIndex}`, {
           bidder: l.args.bidder!,
           amount: l.args.amount!,
           newEndTime: l.args.newEndTime!,
@@ -66,8 +68,11 @@ export function useBidHistory(id: bigint | null, fromBlock: bigint | undefined) 
           logIndex: l.logIndex,
         });
       }
-      if (ranges.length) s.cursor = ranges[ranges.length - 1][1] + 1n;
-      const newestFirst = [...s.bids].sort((a, b) =>
+      if (ranges.length) {
+        const next = ranges[ranges.length - 1][1] + 1n;
+        if (next > s.cursor) s.cursor = next; // never move backwards
+      }
+      const newestFirst = [...s.bids.values()].sort((a, b) =>
         a.blockNumber === b.blockNumber ? b.logIndex - a.logIndex : a.blockNumber < b.blockNumber ? 1 : -1,
       );
       return { bids: newestFirst, syncing: s.cursor <= latest, latest };

@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleUser, Compass, MonitorPlay, Tag } from "lucide-react";
+import { CircleUser, Compass, MonitorPlay, Radio, Tag } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/", label: "Explore", icon: Compass, match: (p: string) => p === "/" || p.startsWith("/auction") },
+  { href: "/live", label: "Live", icon: Radio, match: (p: string) => p.startsWith("/live") },
   { href: "/create", label: "Sell", icon: Tag, match: (p: string) => p.startsWith("/create") },
   { href: "/host", label: "Host", icon: MonitorPlay, match: (p: string) => p.startsWith("/host") },
   { href: "/account", label: "Account", icon: CircleUser, match: (p: string) => p.startsWith("/account") },

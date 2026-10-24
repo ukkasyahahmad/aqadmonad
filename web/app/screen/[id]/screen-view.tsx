@@ -4,6 +4,7 @@ import { Gauge, Radio, Timer, Trophy, Users, Volume2, VolumeX, Zap } from "lucid
 import { useEffect, useMemo, useState } from "react";
 import { lotTitle } from "@/components/auction-card";
 import { lotState, StatePill, TxLink } from "@/components/kit";
+import { Confetti } from "@/components/confetti";
 import { LogoMark } from "@/components/logo";
 import { NftArt } from "@/components/nft-art";
 import { AuctionQr } from "@/components/qr";
@@ -93,6 +94,11 @@ export function ScreenView({ raw }: { raw: string }) {
     if (soldSeen && soundOn) playGavel();
   }, [soldSeen, soundOn]);
 
+  const tickLeft = lot && (state === "live" || state === "ending") && now !== null ? Number(lot.endTime) - now : null;
+  useEffect(() => {
+    if (soundOn && tickLeft !== null && tickLeft > 0 && tickLeft <= 10) playBidTick();
+  }, [tickLeft, soundOn]);
+
   const shownPrice = useAnimatedWei(lot ? (lot.highestBid > 0n ? lot.highestBid : lot.minPrice) : 0n);
 
   if (id === null) return <Center>Invalid auction ID.</Center>;
@@ -100,6 +106,7 @@ export function ScreenView({ raw }: { raw: string }) {
   if (!lot) return <Center>Loading auction #{raw}…</Center>;
 
   const left = now === null ? 0 : Number(lot.endTime) - now;
+  const finalCount = (state === "live" || state === "ending") && left > 0 && left <= 10;
   const syncing = !history.data || history.data.syncing;
   const leader = lot.highestBid > 0n ? lot.highestBidder : null;
   const refunds = Math.max(0, feed.length - 1);
@@ -121,10 +128,11 @@ export function ScreenView({ raw }: { raw: string }) {
             <div className="relative min-h-0 flex-1">
               <NftArt tokenId={lot.tokenId} image={lot.meta?.image} alt={lotTitle(lot)} className="h-full w-auto max-w-full rounded-[2.4cqh]" />
             </div>
-            {state !== "settled" && state !== "cancelled" && (
+            {/* QR opens this lot while it runs; once it is over it points to /live (the next lot) */}
+            {(
               <div className="flex w-[22cqh] shrink-0 flex-col justify-end text-center">
-                <AuctionQr id={lot.id} caption={false} />
-                <p className="mt-[0.8cqh] text-[2.2cqh] font-semibold text-[#E4ED72]">Scan to bid</p>
+                <AuctionQr id={lot.id} caption={false} path={state === "settled" || state === "cancelled" ? "/live" : undefined} />
+                <p className="mt-[0.8cqh] text-[2.2cqh] font-semibold text-[#E4ED72]">{state === "settled" || state === "cancelled" ? "Scan for the next lot" : "Scan to bid"}</p>
                 <p className="text-[1.4cqh] text-[#C9D0CB]">Free test MON · no app needed</p>
               </div>
             )}
@@ -185,7 +193,12 @@ export function ScreenView({ raw }: { raw: string }) {
                       ? "Time is up — awaiting settlement transaction"
                       : "Ends in"}
                 </p>
-                <p className="font-mono text-[20cqh] font-semibold leading-none tabular-nums">{state === "awaiting" ? "00:00" : formatCountdown(left)}</p>
+                <p
+                  key={finalCount ? left : "clock"}
+                  className={`font-mono text-[20cqh] font-semibold leading-none tabular-nums ${finalCount ? "pop-in text-[#E4ED72]" : ""}`}
+                >
+                  {state === "awaiting" ? "00:00" : formatCountdown(left)}
+                </p>
               </div>
               <div key={flash?.n ?? 0} className={`grid grid-cols-[1.4fr_1fr] gap-[2cqh] rounded-[2.4cqh] bg-[#1C211E] p-[2cqh] ${flash?.n ? "bid-flash" : ""}`}>
                 <div>
@@ -283,34 +296,6 @@ function Metric({ label, value, sub }: { label: string; value: string; sub?: str
       <p className="flex items-center gap-[0.5cqh] truncate text-[1.4cqh] text-[#C9D0CB]"><Gauge className="size-[1.5cqh] shrink-0" />{label}</p>
       <p className="truncate font-mono text-[3.4cqh] font-semibold leading-tight">{value}</p>
       {sub && <p className="truncate text-[1.4cqh] text-[#C9D0CB]">{sub}</p>}
-    </div>
-  );
-}
-
-/** Deterministic confetti burst (no Math.random during render). */
-function Confetti() {
-  const colors = ["#E4ED72", "#EEF0ED", "#7FD3A4", "#D7E45B", "#C9D0CB"];
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 z-50 overflow-hidden">
-      {Array.from({ length: 90 }, (_, i) => {
-        const h = (i * 2654435761) % 1000;
-        return (
-          <span
-            key={i}
-            className="confetti-piece"
-            style={
-              {
-                left: `${(h / 10) % 100}%`,
-                background: colors[i % colors.length],
-                "--dx": `${((h % 200) - 100) / 4}vw`,
-                "--rot": `${(h % 720) - 360}deg`,
-                "--dur": `${2.6 + (h % 15) / 10}s`,
-                "--delay": `${(i % 18) / 10}s`,
-              } as React.CSSProperties
-            }
-          />
-        );
-      })}
     </div>
   );
 }

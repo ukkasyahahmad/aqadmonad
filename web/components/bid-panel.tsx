@@ -1,6 +1,6 @@
 "use client";
 
-import { Ban, CheckCircle2, Flag, Hourglass, Loader2, ShieldCheck, X } from "lucide-react";
+import { Ban, BellRing, CheckCircle2, Flag, Hourglass, Loader2, PartyPopper, ShieldCheck, X } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { formatEther } from "viem";
 import { useAccount, useReadContract } from "wagmi";
@@ -11,6 +11,7 @@ import { nickname } from "@/lib/burner";
 import { auctionHouse, minNextBid, ZERO } from "@/lib/contracts";
 import { formatCountdown, formatMon, formatWhen, parseMon, shortAddr } from "@/lib/format";
 import { lotTitle } from "./auction-card";
+import { Confetti } from "./confetti";
 import { Btn, Card, Notice, Pill, StatePill, Tag, TxLink, inputCls, type LotState } from "./kit";
 import { WalletGate } from "./wallet";
 
@@ -41,10 +42,10 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
     address: auctionHouse?.address,
     abi: auctionHouse?.abi,
     functionName: "pendingReturns",
-    args: burner.account ? [burner.account.address] : undefined,
-    query: { enabled: Boolean(quickMode && burner.account), refetchInterval: 3000 },
+    args: address ? [address as `0x${string}`] : undefined,
+    query: { enabled: Boolean(address), refetchInterval: 3000 },
   });
-  const burnerOwed = (owedRaw as bigint | undefined) ?? 0n;
+  const owed = (owedRaw as bigint | undefined) ?? 0n; // refundable MON of the active signer
 
   const required = minNextBid(lot);
   const [typed, setInput] = useState("");
@@ -73,14 +74,45 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
   const isSeller = !!me && me === lot.seller.toLowerCase();
   const sellerWallet = !!walletAddress && walletAddress.toLowerCase() === lot.seller.toLowerCase();
   const isLeader = !!me && lot.highestBidder !== ZERO && me === lot.highestBidder.toLowerCase();
-  const pending = bidTx.busy;
+  const pending = bidTx.busy || withdrawTx.busy;
   const hasBids = lot.highestBid > 0n;
+  const shownBids = Math.max(bidCount, hasBids ? 1 : 0); // history can lag the auction state
+
+  // Did this signer lead at some point while watching? Then losing the lead = "outbid".
+  const [led, setLed] = useState<string | null>(null);
+  if (isLeader && me && led !== me) setLed(me);
+  const participated = !!me && (led === me || owed > 0n);
+  const outbid = participated && !isLeader && hasBids && !isSeller;
+  const won = state === "settled" && isLeader;
+  const lost = state === "settled" && participated && !isLeader;
+
+  // Phone feedback: vibrate when outbid or when you win (where supported).
+  useEffect(() => {
+    if ((outbid && state !== "settled") || won) {
+      try {
+        navigator.vibrate?.(won ? [120, 80, 120, 80, 300] : [200, 100, 200]);
+      } catch {}
+    }
+  }, [outbid, won, state]);
+
+  async function withdrawRefund() {
+    const r = await withdrawTx.send({ address: auctionHouse!.address, abi: auctionHouse!.abi, functionName: "withdraw", args: [] });
+    refetchOwed();
+    if (quickMode) burner.refetch();
+    return r;
+  }
 
   async function placeBid() {
     if (!parsed.ok || tooLow) return;
     const amount = parsed.wei;
     setConfirming(false);
     setPriceChanged(null);
+    // Quick wallet short on MON but holding a refund: withdraw it first, then bid (feels like one step).
+    const GAS_BUFFER = 10n ** 16n; // 0.01 MON headroom for gas
+    if (quickMode && owed > 0n && burner.balance < amount + GAS_BUFFER) {
+      if (!(await withdrawRefund())) return;
+      await new Promise((s) => setTimeout(s, 1500)); // Monad reserve balance: ~3 blocks between txs
+    }
     const r = await bidTx.send({ address: auctionHouse!.address, abi: auctionHouse!.abi, functionName: "bid", args: [lot.id], value: amount });
     onChanged();
     if (quickMode) burner.refetch();
@@ -107,15 +139,30 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
     const cancelled = state === "cancelled";
     return (
       <Card className="space-y-5">
+        {won && <Confetti fixed />}
         <div className="flex items-center justify-between">
           <StatePill state={state} />
           <Tag>On-chain</Tag>
         </div>
+        {won && (
+          <div className="pop-in rounded-2xl bg-primary p-5 text-primary-foreground">
+            <p className="flex items-center gap-2 text-2xl font-semibold"><PartyPopper className="size-6" /> You won!</p>
+            <p className="mt-1 text-sm">The NFT is in your wallet. Settled on-chain for {formatMon(lot.highestBid)} MON.</p>
+          </div>
+        )}
+        {state === "awaiting" && isLeader && (
+          <Notice tone="success" title="You hold the winning bid">The auction is over; the NFT moves to you when the seller settles.</Notice>
+        )}
+        {lost && (
+          <Notice tone="success" title="Auction finished — your MON is safe">
+            {owed > 0n ? `${formatMon(owed)} MON is ready to withdraw below.` : "Your outbid MON has already been withdrawn."}
+          </Notice>
+        )}
         <div>
           <p className="text-sm text-muted-foreground">{hasBids ? (state === "awaiting" ? "Highest bid" : "Winning bid") : "Starting price"}</p>
           <p className="font-mono text-[40px] font-semibold leading-tight tracking-tight">{formatMon(hasBids ? lot.highestBid : lot.minPrice)} MON</p>
           <p className="text-sm text-muted-foreground">
-            {hasBids ? `${bidCount} bid${bidCount === 1 ? "" : "s"} · ${state === "awaiting" ? "leading" : "winner"} ${shortAddr(lot.highestBidder)}` : "No bids were placed"}
+            {hasBids ? `${shownBids} bid${shownBids === 1 ? "" : "s"} · ${state === "awaiting" ? "leading" : "winner"} ${shortAddr(lot.highestBidder)}` : "No bids were placed"}
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -160,7 +207,7 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
             {cancelled ? <>Auction cancelled <Ban className="size-4" /></> : <>Auction ended <Flag className="size-4" /></>}
           </div>
         )}
-        {quickMode && burnerOwed > 0n && <WithdrawBurner amount={burnerOwed} tx={withdrawTx} onDone={() => { refetchOwed(); burner.refetch(); }} />}
+        {owed > 0n && <WithdrawBurner amount={owed} tx={withdrawTx} onDone={() => { refetchOwed(); burner.refetch(); }} />}
         <p className="flex gap-2 border-t border-border pt-4 text-xs text-muted-foreground">
           <Hourglass className="size-4 shrink-0" /> Final price is the winning bid only. Network gas is not included.
         </p>
@@ -184,7 +231,7 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
         <p className="text-sm text-muted-foreground">{hasBids ? "Current highest bid" : "Starting price"}</p>
         <p className="font-mono text-[40px] font-semibold leading-tight tracking-tight">{formatMon(hasBids ? lot.highestBid : lot.minPrice)} MON</p>
         <p className="text-sm text-muted-foreground">
-          {hasBids ? <>{bidCount} bid{bidCount === 1 ? "" : "s"} · {isLeader ? "you are leading" : <>leading bidder <span className="font-mono">{shortAddr(lot.highestBidder)}</span></>}</> : "No bids yet"}
+          {hasBids ? <>{shownBids} bid{shownBids === 1 ? "" : "s"} · {isLeader ? "you are leading" : <>leading bidder <span className="font-mono">{shortAddr(lot.highestBidder)}</span></>}</> : "No bids yet"}
         </p>
       </div>
 
@@ -192,6 +239,34 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
         <Stat label="Minimum next bid" value={`${formatMon(required)} MON`} sub={priceChanged ? `Was ${formatMon(priceChanged.was)} MON` : hasBids ? "Increment +5%, rounded up" : "First bid may equal start"} />
         <Stat label="Ends in" value={formatCountdown(left ?? 0)} sub={formatWhen(lot.endTime)} />
       </div>
+
+      {outbid && !pending && (
+        <div role="alert" className="pop-in space-y-3 rounded-2xl border-2 border-foreground bg-warning-soft p-4">
+          <p className="flex items-center gap-2 text-lg font-semibold"><BellRing className="size-5" /> You&apos;ve been outbid!</p>
+          <p className="text-sm">
+            {owed > 0n
+              ? `Your ${formatMon(owed)} MON is safe in the contract — withdraw it any time, or bid again now.`
+              : "Bid again to take the lead."}
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Btn size="md" disabled={cooldown} onClick={() => { setTouched(true); setInput(formatEther(required)); setPriceChanged(null); setConfirming(true); }}>
+              Bid again · {formatMon(required)} MON
+            </Btn>
+            {owed > 0n && (
+              <Btn size="md" variant="secondary" loading={withdrawTx.busy} disabled={withdrawTx.busy} onClick={withdrawRefund}>
+                Withdraw {formatMon(owed)} MON
+              </Btn>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!outbid && owed > 0n && !pending && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl bg-success-soft p-3 text-sm text-success">
+          <span>Refund from an earlier bid: <b>{formatMon(owed)} MON</b></span>
+          <Btn size="md" variant="dark" loading={withdrawTx.busy} disabled={withdrawTx.busy} onClick={withdrawRefund}>Withdraw</Btn>
+        </div>
+      )}
 
       {state === "ending" && <Notice tone="warning">Under 60 s left — any bid now moves the end to 60 s after that bid.</Notice>}
 
@@ -204,11 +279,11 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
           </button>
         ))}
       </div>
-      {quickMode && <BurnerBox burner={burner} required={required} owed={burnerOwed} withdrawTx={withdrawTx} onWithdrawn={() => { refetchOwed(); burner.refetch(); }} />}
+      {quickMode && <BurnerBox burner={burner} required={required} />}
 
       {/* S3 pending */}
       {pending && (
-        <Notice tone="warning" title={bidTx.phase === "signing" ? "Waiting for your signature…" : "Submitting your bid to Monad…"}>
+        <Notice tone="warning" title={withdrawTx.busy ? "Withdrawing your refund first…" : bidTx.phase === "signing" ? "Waiting for your signature…" : "Submitting your bid to Monad…"}>
           {bidTx.phase === "signing" ? "Approve the transaction in your wallet." : quickMode ? "Sent with eth_sendRawTransactionSync — the receipt comes back in the same request." : "Waiting for the transaction receipt."}
         </Notice>
       )}
@@ -367,13 +442,7 @@ function SignerGate({ quick, burnerReady, action, children }: { quick: boolean; 
   return <WalletGate action={action}>{children}</WalletGate>;
 }
 
-function BurnerBox({ burner, required, owed, withdrawTx, onWithdrawn }: {
-  burner: ReturnType<typeof useBurner>;
-  required: bigint;
-  owed: bigint;
-  withdrawTx: ReturnType<typeof useTx>;
-  onWithdrawn: () => void;
-}) {
+function BurnerBox({ burner, required }: { burner: ReturnType<typeof useBurner>; required: bigint }) {
   if (!burner.account) {
     return (
       <div className="space-y-2 rounded-2xl border border-border p-3 text-sm">
@@ -395,7 +464,6 @@ function BurnerBox({ burner, required, owed, withdrawTx, onWithdrawn }: {
         </Btn>
       )}
       {burner.error && <p className="text-xs text-destructive">{burner.error}</p>}
-      {owed > 0n && <WithdrawBurner amount={owed} tx={withdrawTx} onDone={onWithdrawn} />}
       <p className="text-xs text-muted-foreground">Signed in this browser and sent with Monad&apos;s eth_sendRawTransactionSync.</p>
     </div>
   );

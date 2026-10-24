@@ -6,14 +6,15 @@ import { cn } from "@/lib/utils";
 
 /** URL of the bidding page for an auction, on whatever host serves this app. */
 const noopSubscribe = () => () => {};
-export function useAuctionUrl(id: bigint) {
+export function useAuctionUrl(id: bigint, path?: string) {
   const origin = useSyncExternalStore(noopSubscribe, () => window.location.origin, () => null);
-  return origin ? `${origin}/auction/${id}` : null;
+  return origin ? `${origin}${path ?? `/auction/${id}`}` : null;
 }
 
 /** QR code (inline SVG) pointing phones straight at the auction's bid page. */
-export function AuctionQr({ id, className, caption = true }: { id: bigint; className?: string; caption?: boolean }) {
-  const url = useAuctionUrl(id);
+/** `path` overrides the target, e.g. "/live" for one QR that always follows the running lot. */
+export function AuctionQr({ id, className, caption = true, path }: { id: bigint; className?: string; caption?: boolean; path?: string }) {
+  const url = useAuctionUrl(id, path);
   const [svg, setSvg] = useState<string | null>(null);
   useEffect(() => {
     if (!url) return;

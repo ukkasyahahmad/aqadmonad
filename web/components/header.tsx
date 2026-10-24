@@ -17,6 +17,7 @@ export function Header() {
           </Link>
           <nav className="ml-6 hidden items-center gap-1 text-sm font-medium md:flex">
             <Link className="rounded-lg px-3 py-2 hover:bg-secondary" href="/">Explore</Link>
+            <Link className="rounded-lg px-3 py-2 hover:bg-secondary" href="/live">Live now</Link>
             <Link className="rounded-lg px-3 py-2 hover:bg-secondary" href="/create">Sell an item</Link>
             <Link className="rounded-lg px-3 py-2 hover:bg-secondary" href="/host">Host console</Link>
             <Link className="rounded-lg px-3 py-2 hover:bg-secondary" href="/account">Account</Link>
