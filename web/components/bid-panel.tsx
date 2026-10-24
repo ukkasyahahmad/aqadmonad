@@ -262,6 +262,18 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
         )
       )}
 
+      {sellerWallet && (
+        <div className="space-y-2">
+          <Btn className="w-full" variant="dark" loading={settleTx.busy} disabled={settleTx.busy} onClick={async () => {
+            await settleTx.send({ address: auctionHouse!.address, abi: auctionHouse!.abi, functionName: "endAuction", args: [lot.id] });
+            onChanged();
+          }}>
+            {settleTx.phase === "signing" ? "Confirm in wallet…" : settleTx.phase === "confirming" ? "Closing on Monad…" : hasBids ? `End now & accept ${formatMon(lot.highestBid)} MON` : "End now (no bids)"}
+          </Btn>
+          {settleTx.error && <Notice tone="danger">{settleTx.error}</Notice>}
+        </div>
+      )}
+
       {isSeller && lot.highestBid === 0n && (
         <div className="space-y-2">
           <Btn className="w-full" variant="secondary" loading={cancelTx.busy} disabled={cancelTx.busy} onClick={async () => {

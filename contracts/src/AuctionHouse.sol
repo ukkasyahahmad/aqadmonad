@@ -226,7 +226,8 @@ contract AuctionHouse is ReentrancyGuard, IERC721Receiver {
     // Settlement
     // ---------------------------------------------------------------------
 
-    /// @notice Settle an expired auction. Anyone may call this.
+    /// @notice Settle an auction. Anyone may call this once it has expired; the seller
+    ///         may also call it early, accepting the current highest bid.
     ///         No bids: the NFT returns to the seller. Otherwise the NFT goes to the
     ///         highest bidder and the highest bid is paid to the seller.
     /// @dev    Atomic: if the NFT transfer or the seller payment fails, the whole call
@@ -238,7 +239,7 @@ contract AuctionHouse is ReentrancyGuard, IERC721Receiver {
     function endAuction(uint256 id) external nonReentrant {
         Auction storage a = _existing(id);
         if (a.status != Status.Active) revert AuctionNotActive(id, a.status);
-        if (block.timestamp < a.endTime) revert AuctionNotYetEnded(id, a.endTime);
+        if (block.timestamp < a.endTime && msg.sender != a.seller) revert AuctionNotYetEnded(id, a.endTime);
 
         a.status = Status.Ended; // blocks double settlement, including via reentrancy
         address winner = a.highestBidder;

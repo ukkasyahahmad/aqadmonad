@@ -41,7 +41,8 @@ set to zero *before* sending (checks-effects-interactions), and the function is
 `nonReentrant`. If the transfer fails the whole call reverts, so your credit is restored —
 a failed withdrawal never erases money.
 
-**`endAuction(id)`** — Anyone can call it once the end time has passed. It marks the auction
+**`endAuction(id)`** — Anyone can call it once the end time has passed; the seller can also
+call it earlier to accept the current highest bid and close bidding. It marks the auction
 `Ended` first (so it can never be settled twice, even by re-entrancy), then: with no bids,
 returns the NFT to the seller; with bids, sends the NFT to the winner and the winning MON to
 the seller. Settlement is all-or-nothing: if either transfer fails, the transaction reverts
