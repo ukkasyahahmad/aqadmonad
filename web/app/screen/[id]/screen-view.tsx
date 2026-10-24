@@ -134,6 +134,13 @@ export function ScreenView({ raw }: { raw: string }) {
                 <AuctionQr id={lot.id} caption={false} path={state === "settled" || state === "cancelled" ? "/live" : undefined} />
                 <p className="mt-[0.8cqh] text-[2.2cqh] font-semibold text-[#E4ED72]">{state === "settled" || state === "cancelled" ? "Scan for the next lot" : "Scan to bid"}</p>
                 <p className="text-[1.4cqh] text-[#C9D0CB]">Free test MON · no app needed</p>
+                <QrFullscreenButton
+                  id={lot.id}
+                  path={state === "settled" || state === "cancelled" ? "/live" : undefined}
+                  title={state === "settled" || state === "cancelled" ? "Join the next lot" : lotTitle(lot)}
+                  label="Fullscreen QR"
+                  className="mt-[1cqh] h-[4cqh] w-full gap-[0.6cqh] border-0 bg-[#1C211E] px-[1cqh] text-[1.5cqh] text-[#C9D0CB] hover:bg-[#2A302C] [&_svg]:size-[1.6cqh]"
+                />
               </div>
             )}
           </div>
@@ -156,13 +163,6 @@ export function ScreenView({ raw }: { raw: string }) {
               <Radio className={`size-[1.6cqh] ${live.status === "live" ? "text-[#7FD3A4]" : ""}`} />
               {live.status === "live" ? "monadLogs" : "polling"}
             </span>
-            <QrFullscreenButton
-              id={lot.id}
-              path={state === "settled" || state === "cancelled" ? "/live" : undefined}
-              title={state === "settled" || state === "cancelled" ? "Join the next lot" : lotTitle(lot)}
-              label="QR"
-              className="h-[4cqh] gap-[0.6cqh] border-0 bg-[#1C211E] px-[1.4cqh] text-[1.5cqh] text-[#C9D0CB] hover:bg-[#2A302C]"
-            />
             <button
               onClick={() => setSoundOn((s) => (s ? false : enableSound()))}
               className="grid size-[4cqh] place-items-center rounded-full bg-[#1C211E] text-[#C9D0CB]"
