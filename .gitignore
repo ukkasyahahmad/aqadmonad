@@ -4,3 +4,9 @@
 !.env.example
 
 node_modules/
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+web/.next/
+web/.vercel/
+.superpowers/
