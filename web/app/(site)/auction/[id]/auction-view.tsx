@@ -76,7 +76,7 @@ export function AuctionView({ rawId }: { rawId: string }) {
             <AuctionQr id={lot.id} caption={false} className="w-28 shrink-0" />
             <div className="space-y-1 text-sm">
               <p className="font-semibold">Scan to bid from a phone</p>
-              <p className="text-muted-foreground">Opens this auction. No wallet? A quick-bid wallet with test MON is one tap away.</p>
+              <p className="text-muted-foreground">Opens this auction. Bid with MetaMask.</p>
               <QrFullscreenButton id={lot.id} title={lotTitle(lot)} className="mt-1 h-9 px-3 text-xs" />
             </div>
           </Card>

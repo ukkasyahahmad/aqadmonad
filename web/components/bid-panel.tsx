@@ -17,6 +17,9 @@ import { WalletGate } from "./wallet";
 
 const noopSubscribe = () => () => {};
 
+// Quick-bid wallet hidden: everyone bids with MetaMask. Set to true to bring the switch back.
+const QUICK_BID = false;
+
 type Props = { lot: Lot; state: LotState; now: number | null; bidCount: number; onChanged: () => void };
 
 /**
@@ -30,7 +33,7 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
   // Phones that scanned the QR have no injected wallet: default to the quick-bid wallet.
   const hasInjected = useSyncExternalStore(noopSubscribe, () => "ethereum" in window, () => true);
   const [chosenMode, setMode] = useState<"quick" | "wallet" | null>(null);
-  const mode = chosenMode ?? (hasInjected ? "wallet" : "quick");
+  const mode = QUICK_BID ? chosenMode ?? (hasInjected ? "wallet" : "quick") : "wallet";
   const quickMode = mode === "quick";
   const address = quickMode ? burner.account?.address : walletAddress;
 
@@ -271,14 +274,14 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
       {state === "ending" && <Notice tone="warning">Under 60 s left — any bid now moves the end to 60 s after that bid.</Notice>}
 
       {/* signer switch */}
-      <div className="flex rounded-xl bg-secondary p-1 text-sm font-semibold" role="tablist" aria-label="Bid with">
+      {QUICK_BID && <div className="flex rounded-xl bg-secondary p-1 text-sm font-semibold" role="tablist" aria-label="Bid with">
         {(["quick", "wallet"] as const).map((m) => (
           <button key={m} role="tab" aria-selected={mode === m} disabled={pending} onClick={() => setMode(m)}
             className={`h-10 flex-1 rounded-lg ${mode === m ? "bg-card shadow-sm" : "text-muted-foreground"}`}>
             {m === "quick" ? "Quick-bid wallet" : "MetaMask"}
           </button>
         ))}
-      </div>
+      </div>}
       {quickMode && <BurnerBox burner={burner} required={required} />}
 
       {/* S3 pending */}
