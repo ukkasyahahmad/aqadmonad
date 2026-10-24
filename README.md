@@ -3,7 +3,7 @@
 > **Unaudited. Testnet only. Do not use with real assets.**
 
 Photograph an item, mint it as an NFT, and auction it live for MON. The audience scans one QR
-code and bids from their phones in a tap — no app, no wallet setup. The big screen shows the
+code and bids from their phones with MetaMask. The big screen shows the
 countdown, a live leaderboard and Monad's speed measured in real time. Outbid bidders get every
 wei back, late bids extend the clock, and settlement moves the NFT and the MON in one transaction.
 
@@ -20,9 +20,10 @@ Built for **Monad Blitz Jogja (24 Oct 2026)** with [MONSKILLS](https://skills.de
 
 ## Try it in one minute
 
-1. Open **https://aqadmonad.vercel.app/live** on your phone (or scan the QR on any audience screen).
-2. Tap **Create quick-bid wallet** → **Get 1 test MON** (free, from the MONSKILLS faucet).
-3. Tap **Review bid** → **Confirm bid**. The receipt comes back in about a second.
+1. Get test MON for your MetaMask wallet from https://faucet.monad.xyz.
+2. Open **https://aqadmonad.vercel.app/live** in MetaMask's in-app browser on your phone (or on
+   desktop with the MetaMask extension) and connect.
+3. Tap **Review bid** → **Confirm bid** and approve in MetaMask. The receipt comes back in about a second.
 4. If someone outbids you, your phone shows **“You've been outbid!”** with **Bid again** and
    **Withdraw** buttons.
 
@@ -45,7 +46,7 @@ No auction running? Start one at `/create` with MetaMask, or stage one from the 
 
 | Monad feature | How Aqad uses it | Where |
 |---|---|---|
-| `eth_sendRawTransactionSync` — receipt in the same RPC call | Quick-bid wallets sign in the browser and get the receipt back in one request; the UI shows the measured time | `web/hooks/use-tx.ts` |
+| `eth_sendRawTransactionSync` — receipt in the same RPC call | The speed probe (below) gets its receipt back in one request; MetaMask bids poll for the receipt every 250 ms. The UI shows the measured time | `web/hooks/use-tx.ts`, `use-speed-probe.ts` |
 | `monadLogs` WebSocket — logs at the *Proposed* stage | The audience screen shows a bid before the bidder's own receipt arrives; reconnects with backoff, falls back to polling | `web/hooks/use-live-bids.ts` |
 | ~0.3–0.4 s blocks | Measured live on the screen from block cadence (no hard-coded number) | `web/hooks/use-block-rate.ts` |
 | Fast confirmation | **Speed probe**: the screen's own wallet sends a 0-MON self-transfer every 15 s via `eth_sendRawTransactionSync` and displays the real send→receipt time | `web/hooks/use-speed-probe.ts` |
@@ -181,7 +182,7 @@ Set `APP_URL` to print links for another deployment.
 
 **On stage**
 1. *Problem (20 s)* — auctions at events are slow and need trust in the auctioneer.
-2. *Audience joins (40 s)* — everyone scans the QR → **Get 1 test MON** → bids. The screen's
+2. *Audience joins (40 s)* — everyone scans the QR, opens it in MetaMask → bids. The screen's
    leaderboard and wallet count climb; each bid flashes on screen.
 3. *Bidding war (40 s)* — outbid phones buzz with **Bid again**; point at the refund: the old
    bid is credited in full, in the same transaction that outbid it.
@@ -205,15 +206,17 @@ Set `APP_URL` to print links for another deployment.
 | Production site, phone viewport (auction #7): quick-bid wallet → faucet → bid | passed; faucet sent 1 MON; bid confirmed in 1,523 ms |
 | `/live` + outbid flow (auction #8): A bids → B outbids → A sees the outbid alert → **Bid again** | passed; A leads again at 0.011025 MON; alert persists across reloads (read from on-chain refunds) |
 | Speed probe on testnet | 0-MON self-transfer confirmed via `eth_sendRawTransactionSync` in 1.10 s; measured block time 0.27–0.32 s |
+| Note | the quick-bid rows above were run before the quick-bid wallet was hidden (bidding is now MetaMask-only) |
 | Not verified | vibration and the **You won!** banner on a physical phone; MetaMask mobile deep link |
 
 ## Limitations
 
 - Unaudited; testnet only.
-- Quick-bid wallet keys live in the browser's `localStorage` — fine for test MON, never for real funds.
+- Bidding needs MetaMask (extension, or the MetaMask app's browser on a phone). An in-browser
+  quick-bid wallet exists in the code but is hidden (`QUICK_BID` in `web/components/bid-panel.tsx`);
+  wallets created before that still show on `/account` so their refunds can be withdrawn.
 - Faucet and upload rate limits are in-memory (per serverless instance).
-- Rebidding needs a fresh deposit; the earlier bid stays withdrawable (the quick-bid wallet
-  withdraws it automatically first when its balance is short).
+- Rebidding needs a fresh deposit; the earlier bid stays withdrawable.
 - A seller that rejects MON or a winning contract that rejects NFTs blocks settlement; assets
   stay escrowed and fully accounted for (see `contracts/EXPLAIN.md`).
 - For physical items the NFT is a listing record; delivery happens off-chain.
