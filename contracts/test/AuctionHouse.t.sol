@@ -347,8 +347,36 @@ contract AuctionHouseTest is Test {
         (uint256 id,) = _list();
         uint64 end = _auction(id).endTime;
         vm.warp(end - 1);
+        vm.prank(carol); // only the seller may end early
         vm.expectRevert(abi.encodeWithSelector(AuctionHouse.AuctionNotYetEnded.selector, id, end));
         house.endAuction(id);
+    }
+
+    function test_SellerEndsEarlyAcceptingTopBid() public {
+        (uint256 id, uint256 tokenId) = _list();
+        _bid(alice, id, MIN);
+        _bid(bob, id, 2 ether);
+        vm.warp(_auction(id).endTime - 100);
+
+        vm.prank(seller);
+        house.endAuction(id);
+
+        assertEq(nft.ownerOf(tokenId), bob);
+        assertEq(seller.balance, 2 ether);
+        assertEq(uint8(_auction(id).status), uint8(AuctionHouse.Status.Ended));
+        assertEq(house.pendingReturns(alice), MIN, "outbid refund untouched");
+
+        vm.prank(carol);
+        vm.expectRevert(abi.encodeWithSelector(AuctionHouse.AuctionNotActive.selector, id, AuctionHouse.Status.Ended));
+        house.bid{value: 3 ether}(id);
+    }
+
+    function test_SellerEndsEarlyWithNoBidsReturnsNft() public {
+        (uint256 id, uint256 tokenId) = _list();
+        vm.prank(seller);
+        house.endAuction(id);
+        assertEq(nft.ownerOf(tokenId), seller);
+        assertEq(uint8(_auction(id).status), uint8(AuctionHouse.Status.Ended));
     }
 
     // ------------------------------------------------------------------ 15-16. settlement

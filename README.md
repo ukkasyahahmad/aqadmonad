@@ -14,8 +14,8 @@ Built for **Monad Blitz Jogja (24 Oct 2026)** with [MONSKILLS](https://skills.de
 | **Live app** | https://aqadmonad.vercel.app |
 | **Join the running auction (one QR for the event)** | https://aqadmonad.vercel.app/live |
 | Network | Monad Testnet · chain ID `10143` · RPC `https://testnet-rpc.monad.xyz` |
-| **AuctionHouse** | [`0x997a70a4eee09541F2079ab871C13A7778b58164`](https://testnet.monadvision.com/address/0x997a70a4eee09541F2079ab871C13A7778b58164) · verified (MonadVision perfect match, Monadscan) |
-| **DemoNFT** | [`0x9765f91714AE866D1ce406A5922e0641B1F20AE9`](https://testnet.monadvision.com/address/0x9765f91714AE866D1ce406A5922e0641B1F20AE9) · verified (MonadVision perfect match, Monadscan) |
+| **AuctionHouse** | [`0x3231cd2df88b70c687698fde7bbb7a3c31950e5f`](https://testnet.monadvision.com/address/0x3231cd2df88b70c687698fde7bbb7a3c31950e5f) · verified (MonadVision perfect match, Monadscan) |
+| **DemoNFT** | [`0x2fb727b1b1ccec990029e4214986e02440dc0fd9`](https://testnet.monadvision.com/address/0x2fb727b1b1ccec990029e4214986e02440dc0fd9) · verified (MonadVision perfect match, Monadscan) |
 | Source | https://github.com/ukkasyahahmad/aqadmonad |
 
 ## Try it in one minute
@@ -195,10 +195,10 @@ Set `APP_URL` to print links for another deployment.
 
 | Check | Result |
 |---|---|
-| Fresh clone of this repo → `./install-deps.sh`, `forge build`, `forge test` | pass — 52 unit/fuzz tests + 4 invariants (256 runs × 128,000 calls, 0 reverts) |
+| Fresh clone of this repo → `./install-deps.sh`, `forge build`, `forge test` | pass — 55 tests: unit/fuzz + invariants (256 runs × 128,000 calls, 0 reverts) |
 | Fresh clone → `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, all routes HTTP 200 with no `.env` | pass |
 | Fresh clone → `pnpm contracts:export` | reproduces the committed `abis.ts` / `deployedContracts.ts` exactly |
-| Testnet deployment + verification | both contracts verified via the MONSKILLS API (MonadVision “perfect match”; Monadscan verified) |
+| Testnet deployment + verification | redeployed 24 Oct 2026 (seller can end early; fresh auction history); both contracts verified via the MONSKILLS API (MonadVision “perfect match”; Monadscan verified). Auction numbers below refer to the previous deployment |
 | `/create` with MetaMask: mint → approve → create (auction #1) | passed; NFT escrowed; no-bid `endAuction` returned it to the seller |
 | Bidding (auction #2): quick-bid 0.05 → MetaMask outbid 0.0525 → withdraw → settle | passed; sync receipt 763 ms; `Withdrawn` 0.05 MON; NFT owner = winner; seller paid; AuctionHouse balance 0 |
 | Audience screen (auction #3) | `monadLogs` live; bid on screen 0.67 s after Confirm, before the bidder's own receipt |

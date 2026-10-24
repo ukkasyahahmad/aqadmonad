@@ -85,12 +85,12 @@ function HostLot({ lot, now }: { lot: Lot; now: number | null }) {
         <Link href={`/auction/${lot.id}`}><Btn size="md" variant="secondary">Open</Btn></Link>
         <Link href={`/screen/${lot.id}`} target="_blank"><Btn size="md" variant="secondary"><MonitorPlay className="size-4" /> Audience screen</Btn></Link>
         {(state === "live" || state === "ending") && <QrFullscreenButton id={lot.id} title={lotTitle(lot)} />}
-        {state === "awaiting" && (
+        {lot.status === "Active" && (
           <Btn size="md" variant="dark" loading={settle.busy} disabled={settle.busy} onClick={async () => {
             await settle.send({ address: auctionHouse!.address, abi: auctionHouse!.abi, functionName: "endAuction", args: [lot.id] });
             refresh();
           }}>
-            {settle.phase === "confirming" ? "Settling…" : "Settle"}
+            {settle.phase === "confirming" ? "Settling…" : state === "awaiting" ? "Settle" : "End now"}
           </Btn>
         )}
         {lot.status === "Active" && lot.highestBid === 0n && (
