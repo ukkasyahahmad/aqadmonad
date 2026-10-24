@@ -12,7 +12,7 @@ import { useChainTime } from "@/hooks/use-chain-time";
 import { useLiveBids } from "@/hooks/use-live-bids";
 import { nickname } from "@/lib/burner";
 import { targetChain } from "@/lib/chain";
-import { minNextBid } from "@/lib/contracts";
+import { auctionHouse, minNextBid } from "@/lib/contracts";
 import { formatCountdown, formatMon } from "@/lib/format";
 
 /** Projector view (16:9, readable from ~10 m). All numbers come from the chain. */
@@ -46,6 +46,7 @@ export function ScreenView({ raw }: { raw: string }) {
   }, [lot]);
 
   if (id === null) return <Center>Invalid auction ID.</Center>;
+  if (!auctionHouse) return <Center>Contracts are not deployed on {targetChain.name} yet.</Center>;
   if (!lot) return <Center>Loading auction #{raw}…</Center>;
 
   const state = lotState(lot.status, lot.endTime, now);

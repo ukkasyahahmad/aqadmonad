@@ -14,6 +14,7 @@ import { useAuction } from "@/hooks/use-auctions";
 import { useBidHistory } from "@/hooks/use-bid-history";
 import { useChainTime } from "@/hooks/use-chain-time";
 import { explorerAddress, targetChain } from "@/lib/chain";
+import { auctionHouse } from "@/lib/contracts";
 import { formatCountdown, formatMon, shortAddr } from "@/lib/format";
 
 function parseId(s: string): bigint | null {
@@ -28,6 +29,7 @@ export function AuctionView({ rawId }: { rawId: string }) {
   const qc = useQueryClient();
 
   if (id === null) return <Card>Invalid auction ID.</Card>;
+  if (!auctionHouse) return <Card>Contracts are not deployed on {targetChain.name} yet.</Card>;
   if (isPending) return <div className="h-[600px] animate-pulse rounded-3xl bg-secondary" />;
   if (error) return <Card className="text-warning">Could not reach the RPC. Retrying…</Card>;
   if (!lot) return <Card>Auction #{id.toString()} does not exist on {targetChain.name}.</Card>;

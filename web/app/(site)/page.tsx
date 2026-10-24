@@ -6,6 +6,7 @@ import { AuctionCard } from "@/components/auction-card";
 import { Btn, Card, Eyebrow, lotState } from "@/components/kit";
 import { GALLERY_LIMIT, useAuctions } from "@/hooks/use-auctions";
 import { useChainTime } from "@/hooks/use-chain-time";
+import { auctionHouse } from "@/lib/contracts";
 
 const FILTERS = ["All", "Live", "Awaiting settlement", "Settled"] as const;
 
@@ -66,7 +67,9 @@ export default function Home() {
         )}
       </div>
 
-      {error ? (
+      {!auctionHouse ? (
+        <Card className="py-10 text-center text-sm text-muted-foreground">Contracts are not deployed on Monad Testnet yet.</Card>
+      ) : error ? (
         <Card><p className="text-sm text-warning">Could not reach the Monad RPC. Retrying every 2 seconds…</p></Card>
       ) : isPending ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
