@@ -12,8 +12,8 @@ Built for **Monad Blitz Jogja (24 Oct 2026)** with [MONSKILLS](https://skills.de
 |---|---|
 | Live app | https://web-jet-eight-40.vercel.app |
 | Network | Monad Testnet · chain ID `10143` · RPC `https://testnet-rpc.monad.xyz` |
-| AuctionHouse | [`0x1c02b09817612dB8A6c8fba72BA5E871443A4740`](https://testnet.monadvision.com/address/0x1c02b09817612dB8A6c8fba72BA5E871443A4740) · verified on MonadVision & Monadscan |
-| DemoNFT | [`0xEea8e7eea7BE1d11B0C1FC9582c5b9753D049589`](https://testnet.monadvision.com/address/0xEea8e7eea7BE1d11B0C1FC9582c5b9753D049589) · verified on MonadVision & Monadscan |
+| AuctionHouse | [`0x997a70a4eee09541F2079ab871C13A7778b58164`](https://testnet.monadvision.com/address/0x997a70a4eee09541F2079ab871C13A7778b58164) (block 73734653) |
+| DemoNFT | [`0x9765f91714AE866D1ce406A5922e0641B1F20AE9`](https://testnet.monadvision.com/address/0x9765f91714AE866D1ce406A5922e0641B1F20AE9) (block 73734651) |
 | Explorer | https://testnet.monadvision.com |
 
 ## What it does
@@ -133,9 +133,10 @@ deploy `web/` to Vercel. Vercel env: `BLOB_READ_WRITE_TOKEN` (photo uploads), op
 | `pnpm typecheck`, `pnpm lint`, `pnpm build` | pass |
 | Browser E2E on a local anvil chain (before switching the app to testnet-only): create → bid → outbid → withdraw → expire → settle | passed; NFT owner = winner, contract balance 0 after settlement |
 | `eth_sendRawTransactionSync`, `monadLogs` WebSocket, monskills faucet — probed on Monad Testnet | work (sync receipt 997 ms from Jogja; faucet sent 1 MON) |
-| Testnet deployment (24 Oct 2026, blocks 73733729–73733753, deployer `0x7be1…3DBa`) | done — [DemoNFT tx](https://testnet.monadvision.com/tx/0xbfc502742a070f9685b23c34ba214b7171027d6ed72e147e769f7e46f32598e5), [AuctionHouse tx](https://testnet.monadvision.com/tx/0x75ccac1d68a2b9fbebac1088ad4e9b58a639f18063ace8425f348ae6532be8bd), 3 demo NFTs minted |
-| Verification (MONSKILLS verify API) | both contracts: MonadVision “perfect match”, Monadscan “Pass - Verified” |
-| MetaMask flow in a real browser wallet | **NOT VERIFIED** (no extension in the test browser) |
+| Testnet deployment | done (24 Oct 2026); explorer source verification **NOT YET DONE** |
+| Testnet E2E in a browser with MetaMask: `/create` mint → approve → create (auction #1) | passed; token #4 escrowed in AuctionHouse; `endAuction(1)` with no bids returned it to the seller |
+| Testnet E2E bidding (auction #2): quick-bid 0.05 → MetaMask outbid 0.0525 → quick-bid withdraw → settle from the page | passed; sync receipt 763 ms; `Withdrawn` 0.05 MON; NFT owner = winner; seller paid; AuctionHouse balance 0 |
+| Audience screen live feed on testnet (auction #3) | `monadLogs` WebSocket live; bid on screen 0.67 s after the phone tapped Confirm (before its own receipt), anti-sniping flash at 1.3 s; history after a reload in ~2 s |
 
 ## Limitations
 

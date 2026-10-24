@@ -25,6 +25,7 @@ export type BidEvent = {
 /**
  * BidPlaced logs for one auction, read in ≤100-block windows (Monad RPC limit) from the
  * auction's creation block. Keeps a cursor so each 2 s refresh only scans new blocks.
+ * The cursor only advances when every window succeeds, so a failed refresh is retried whole.
  */
 export function useBidHistory(id: bigint | null, fromBlock: bigint | undefined) {
   const client = usePublicClient();
@@ -39,29 +40,27 @@ export function useBidHistory(id: bigint | null, fromBlock: bigint | undefined) 
       if (state.current?.key !== key) state.current = { key, cursor: fromBlock!, bids: [] };
       const s = state.current;
       const latest = await client!.getBlockNumber();
-      let windows = 0;
-      while (s.cursor <= latest && windows < MAX_WINDOWS_PER_REFRESH) {
-        const to = s.cursor + LOG_RANGE - 1n < latest ? s.cursor + LOG_RANGE - 1n : latest;
-        const logs = await client!.getLogs({
-          address: auctionHouse!.address,
-          event: BidPlaced,
-          args: { id: id! },
-          fromBlock: s.cursor,
-          toBlock: to,
-        });
-        for (const l of logs) {
-          s.bids.push({
-            bidder: l.args.bidder!,
-            amount: l.args.amount!,
-            newEndTime: l.args.newEndTime!,
-            blockNumber: l.blockNumber,
-            txHash: l.transactionHash,
-            logIndex: l.logIndex,
-          });
-        }
-        s.cursor = to + 1n;
-        windows++;
+      // Each window is one ~0.6 s round trip, so fetch this refresh's windows in parallel.
+      const ranges: [bigint, bigint][] = [];
+      for (let from = s.cursor; from <= latest && ranges.length < MAX_WINDOWS_PER_REFRESH; from += LOG_RANGE) {
+        ranges.push([from, from + LOG_RANGE - 1n < latest ? from + LOG_RANGE - 1n : latest]);
       }
+      const results = await Promise.all(
+        ranges.map(([fromBlock, toBlock]) =>
+          client!.getLogs({ address: auctionHouse!.address, event: BidPlaced, args: { id: id! }, fromBlock, toBlock }),
+        ),
+      );
+      for (const l of results.flat()) {
+        s.bids.push({
+          bidder: l.args.bidder!,
+          amount: l.args.amount!,
+          newEndTime: l.args.newEndTime!,
+          blockNumber: l.blockNumber,
+          txHash: l.transactionHash,
+          logIndex: l.logIndex,
+        });
+      }
+      if (ranges.length) s.cursor = ranges[ranges.length - 1][1] + 1n;
       const newestFirst = [...s.bids].sort((a, b) =>
         a.blockNumber === b.blockNumber ? b.logIndex - a.logIndex : a.blockNumber < b.blockNumber ? 1 : -1,
       );

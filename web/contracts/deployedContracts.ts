@@ -3,12 +3,12 @@
 const deployedContracts: Record<string, Record<"AuctionHouse" | "DemoNFT", { address: `0x${string}`; deployedOnBlock: number }>> = {
   "10143": {
     "AuctionHouse": {
-      "address": "0x1c02b09817612db8a6c8fba72ba5e871443a4740",
-      "deployedOnBlock": 73733732
+      "address": "0x997a70a4eee09541f2079ab871c13a7778b58164",
+      "deployedOnBlock": 73734653
     },
     "DemoNFT": {
-      "address": "0xeea8e7eea7be1d11b0c1fc9582c5b9753d049589",
-      "deployedOnBlock": 73733729
+      "address": "0x9765f91714ae866d1ce406a5922e0641b1f20ae9",
+      "deployedOnBlock": 73734651
     }
   }
 };

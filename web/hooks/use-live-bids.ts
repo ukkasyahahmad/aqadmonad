@@ -75,10 +75,11 @@ export function useLiveBids(id: bigint | null) {
       }
     })();
 
+    // Only unsubscribe: viem shares one socket per URL, so closing it here would kill the
+    // subscription of the next mount (React dev mounts effects twice).
     return () => {
       cancelled = true;
       unsub?.();
-      client.transport.getRpcClient?.().then((c) => c.close()).catch(() => {});
     };
   }, [id, enabled]);
 
