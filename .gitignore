@@ -1,0 +1,6 @@
+# env files hold private keys: never commit
+.env
+.env.*
+!.env.example
+
+node_modules/
