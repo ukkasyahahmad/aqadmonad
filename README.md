@@ -136,7 +136,7 @@ deploy `web/` to Vercel. Vercel env: `BLOB_READ_WRITE_TOKEN` (photo uploads), op
 | Testnet deployment | done (24 Oct 2026); explorer source verification **NOT YET DONE** |
 | Testnet E2E in a browser with MetaMask: `/create` mint → approve → create (auction #1) | passed; token #4 escrowed in AuctionHouse; `endAuction(1)` with no bids returned it to the seller |
 | Testnet E2E bidding (auction #2): quick-bid 0.05 → MetaMask outbid 0.0525 → quick-bid withdraw → settle from the page | passed; sync receipt 763 ms; `Withdrawn` 0.05 MON; NFT owner = winner; seller paid; AuctionHouse balance 0 |
-| Audience screen live feed on testnet | **ISSUE**: `monadLogs` WebSocket did not connect (fell back to 2 s polling); bid list took ~15–20 s to fill after a reload |
+| Audience screen live feed on testnet (auction #3) | `monadLogs` WebSocket live; bid on screen 0.67 s after the phone tapped Confirm (before its own receipt), anti-sniping flash at 1.3 s; history after a reload in ~2 s |
 
 ## Limitations
 
