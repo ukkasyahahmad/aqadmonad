@@ -49,7 +49,7 @@ export function AuctionView({ rawId }: { rawId: string }) {
         <ChevronLeft className="size-4" /> All auctions
       </Link>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,720px)_minmax(0,460px)] lg:justify-between">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,720px)_minmax(0,460px)] lg:justify-between">
         <div className="space-y-6">
           <NftArt tokenId={lot.tokenId} image={lot.meta?.image} alt={lotTitle(lot)} className="rounded-3xl" />
           <div className="hidden lg:block">

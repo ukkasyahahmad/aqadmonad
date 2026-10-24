@@ -248,7 +248,7 @@ export function BidPanel({ lot, state, now, bidCount, onChanged }: Props) {
               ? `Your ${formatMon(owed)} MON is safe in the contract — withdraw it any time, or bid again now.`
               : "Bid again to take the lead."}
           </p>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <Btn size="md" disabled={cooldown} onClick={() => { setTouched(true); setInput(formatEther(required)); setPriceChanged(null); setConfirming(true); }}>
               Bid again · {formatMon(required)} MON
             </Btn>
@@ -400,8 +400,8 @@ function ConfirmDialog(p: {
     return () => window.removeEventListener("keydown", onKey);
   }, [p]);
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/50 p-4" onClick={p.onCancel}>
-      <div role="dialog" aria-modal="true" aria-labelledby="confirm-title" className="w-full max-w-sm space-y-4 rounded-3xl bg-card p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex overflow-y-auto bg-foreground/50 p-4" onClick={p.onCancel}>
+      <div role="dialog" aria-modal="true" aria-labelledby="confirm-title" className="m-auto w-full max-w-sm space-y-4 rounded-3xl bg-card p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between">
           <div className="space-y-2">
             <Tag>Real bid</Tag>

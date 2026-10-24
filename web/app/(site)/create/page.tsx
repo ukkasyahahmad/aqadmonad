@@ -192,7 +192,7 @@ export default function CreatePage() {
   const previewTitle = source === "mint" ? name || "Untitled item" : `Token #${tokenIdInput || "?"}`;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
       {/* Step rail */}
       <aside className="space-y-4">
         <div>
@@ -338,7 +338,7 @@ export default function CreatePage() {
         )}
 
         {step === 3 && (
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Starting price" error={errors.price} hint="The first bid must be at least this. Later bids +5%.">
               <div className="relative">
                 <input inputMode="decimal" className={cn(inputCls(!!errors.price), "pr-16 font-mono")} value={price} onChange={(e) => setPrice(e.target.value)} />

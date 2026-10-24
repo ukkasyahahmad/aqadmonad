@@ -125,17 +125,17 @@ export function WalletGate({ children, action = "continue" }: { children: React.
         <div className="space-y-2">
           <a
             href={metamaskDeepLink() ?? "#"}
-            className="flex h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-foreground text-[15px] font-semibold text-background"
+            className="flex h-[52px] w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-foreground px-4 text-[15px] font-semibold text-background"
           >
-            <Wallet className="size-4" /> Open in MetaMask app to {action}
+            <Wallet className="size-4 shrink-0" /> Open in MetaMask
           </a>
-          <p className="text-center text-xs text-muted-foreground">No wallet found in this browser.</p>
+          <p className="text-center text-xs text-muted-foreground">No wallet in this browser — open the MetaMask app to {action}.</p>
         </div>
       );
     }
     return (
       <Btn className="w-full" variant="dark" loading={isPending} onClick={() => connectors[0] && connect({ connector: connectors[0] })}>
-        <Wallet className="size-4" /> Connect wallet to {action}
+        <Wallet className="size-4 shrink-0" /> Connect wallet
       </Btn>
     );
   }

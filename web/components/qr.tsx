@@ -106,24 +106,27 @@ function QrOverlay({ id, path, title, subtitle, onClose }: { id: bigint; path?: 
   }, []);
 
   return (
-    <div ref={ref} role="dialog" aria-modal="true" aria-label={`QR code: ${title}`} className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-[3vh] bg-white p-[4vh] text-[#171A18]">
-      <button onClick={onClose} aria-label="Close" className="absolute right-[3vh] top-[3vh] grid size-14 place-items-center rounded-full bg-[#F5F6F4] hover:bg-[#E4E8E4]">
+    <div ref={ref} role="dialog" aria-modal="true" aria-label={`QR code: ${title}`} className="fixed inset-0 z-[100] flex overflow-y-auto bg-white p-[4vh] text-[#171A18]">
+      <button onClick={onClose} aria-label="Close" className="fixed right-[3vh] top-[3vh] grid size-14 place-items-center rounded-full bg-[#F5F6F4] hover:bg-[#E4E8E4]">
         <X className="size-7" />
       </button>
-      <div className="flex items-center gap-3">
-        <LogoMark className="size-[6vh]" />
-        <span className="text-[4vh] font-semibold tracking-tight">Aqad</span>
-      </div>
-      <div
-        className="aspect-square w-[min(70vh,86vw)] [&>svg]:h-full [&>svg]:w-full"
-        role="img"
-        aria-label={`QR code for ${url ?? "auction"}`}
-        dangerouslySetInnerHTML={svg ? { __html: svg } : undefined}
-      />
-      <div className="text-center">
-        <p className="text-[4.5vh] font-semibold leading-tight">{title}</p>
-        <p className="text-[2.6vh] text-[#5B635F]">{subtitle}</p>
-        {url && <p className="mt-[1vh] font-mono text-[2.4vh] font-semibold">{url.replace(/^https?:\/\//, "")}</p>}
+      {/* m-auto: centred when it fits, scrollable when the screen is too short */}
+      <div className="m-auto flex flex-col items-center gap-[3vh]">
+        <div className="flex items-center gap-3">
+          <LogoMark className="size-[6vh]" />
+          <span className="text-[4vh] font-semibold tracking-tight">Aqad</span>
+        </div>
+        <div
+          className="aspect-square w-[min(70vh,86vw)] [&>svg]:h-full [&>svg]:w-full"
+          role="img"
+          aria-label={`QR code for ${url ?? "auction"}`}
+          dangerouslySetInnerHTML={svg ? { __html: svg } : undefined}
+        />
+        <div className="text-center">
+          <p className="text-[4.5vh] font-semibold leading-tight">{title}</p>
+          <p className="text-[2.6vh] text-[#5B635F]">{subtitle}</p>
+          {url && <p className="mt-[1vh] font-mono text-[2.4vh] font-semibold">{url.replace(/^https?:\/\//, "")}</p>}
+        </div>
       </div>
     </div>
   );

@@ -28,7 +28,7 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
-      <section className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
         <div className="space-y-3">
           <Eyebrow>Monad Testnet · real-time auctions</Eyebrow>
           <h1 className="text-[32px] font-semibold leading-[1.05] tracking-[-1px] sm:text-[52px] sm:tracking-[-1.8px]">
@@ -72,7 +72,7 @@ export default function Home() {
       ) : error ? (
         <Card><p className="text-sm text-warning">Could not reach the Monad RPC. Retrying every 2 seconds…</p></Card>
       ) : isPending ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }, (_, i) => (
             <div key={i} className="h-[440px] animate-pulse rounded-3xl bg-secondary" />
           ))}
@@ -84,12 +84,12 @@ export default function Home() {
           <Link href="/create"><Btn>Sell an item</Btn></Link>
         </Card>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {lots.map((l) => <AuctionCard key={l.id.toString()} lot={l} now={now} />)}
         </div>
       )}
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {[
           ["1 · Escrow", "The seller's NFT moves into the AuctionHouse contract when the auction starts."],
           ["2 · Bid & refund", "Each bid must beat the last by 5%. Outbid MON is credited to you and withdrawable any time."],

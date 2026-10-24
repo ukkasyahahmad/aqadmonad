@@ -4,6 +4,8 @@ import { ArrowRight, Bookmark } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useAccount, usePublicClient } from "wagmi";
+import { useBurner } from "@/hooks/use-burner";
+import { nickname } from "@/lib/burner";
 import { lotTitle } from "@/components/auction-card";
 import { Btn, Card, Eyebrow, lotState, StatePill } from "@/components/kit";
 import { NftArt } from "@/components/nft-art";
@@ -47,7 +49,11 @@ function Empty({ title, body }: { title: string; body: string }) {
 
 export default function AccountPage() {
   const mounted = useMounted();
-  const { address } = useAccount();
+  const { address: walletAddress } = useAccount();
+  const burner = useBurner();
+  // Phones bid with the quick-bid wallet; desktops usually with MetaMask. Show whichever is active.
+  const address = walletAddress ?? burner.account?.address;
+  const viaQuick = !walletAddress && !!burner.account;
   const { data } = useAuctions();
   const now = useChainTime();
   const { ids } = useWatchlist();
@@ -70,8 +76,13 @@ export default function AccountPage() {
         <Eyebrow>Account</Eyebrow>
         <h1 className="text-3xl font-semibold tracking-tight">Your bids, listings & watchlist</h1>
         <p className="text-sm text-muted-foreground">Bids and listings are read from the latest {GALLERY_LIMIT} auctions on-chain. Outbid refunds appear in the banner above.</p>
+        {mounted && viaQuick && burner.account && (
+          <p className="mt-2 inline-flex rounded-full bg-accent px-3 py-1 text-sm">
+            Showing your quick-bid wallet <b className="ml-1">{nickname(burner.account.address)}</b>
+          </p>
+        )}
       </div>
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card id="bids" className="space-y-3">
           <h2 className="text-lg font-semibold">My bids · leading</h2>
           {!mounted ? null : !address ? (

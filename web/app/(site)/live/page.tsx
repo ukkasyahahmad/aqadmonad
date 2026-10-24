@@ -46,7 +46,7 @@ export default function LivePage() {
       ) : target ? (
         <AuctionView key={target.id.toString()} rawId={target.id.toString()} />
       ) : running.length > 1 ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {running.map((l) => (
             <div key={l.id.toString()} onClickCapture={(e) => { e.preventDefault(); setPicked(l.id.toString()); }}>
               <AuctionCard lot={l} now={now} />

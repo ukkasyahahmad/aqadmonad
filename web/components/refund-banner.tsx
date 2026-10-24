@@ -4,16 +4,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAccount, useReadContract } from "wagmi";
 import { auctionHouse } from "@/lib/contracts";
 import { formatMon } from "@/lib/format";
+import { useBurner } from "@/hooks/use-burner";
 import { useTx } from "@/hooks/use-tx";
 import { Btn, TxLink } from "./kit";
 import { useMounted } from "./wallet";
 
-/** Shows the connected wallet's on-chain pendingReturns with a Withdraw button. */
+/** Shows the active wallet's on-chain pendingReturns (MetaMask, else the quick-bid wallet) with a Withdraw button. */
 export function RefundBanner() {
   const mounted = useMounted();
-  const { address } = useAccount();
+  const { address: walletAddress } = useAccount();
+  const burner = useBurner();
+  const address = walletAddress ?? burner.account?.address;
   const qc = useQueryClient();
-  const tx = useTx();
+  const tx = useTx(walletAddress ? null : burner.account);
   const { data: owed, refetch } = useReadContract({
     address: auctionHouse?.address,
     abi: auctionHouse?.abi,
