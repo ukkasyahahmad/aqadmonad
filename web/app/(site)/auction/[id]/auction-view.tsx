@@ -131,7 +131,7 @@ export function AuctionView({ rawId }: { rawId: string }) {
       {open && (
         <a
           href="#bid-panel"
-          className="fixed inset-x-0 bottom-14 z-20 flex items-center justify-between border-t border-border bg-card px-4 py-3 md:hidden"
+          className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 flex items-center justify-between border-t border-border bg-card px-4 py-3 md:hidden"
         >
           <span>
             <span className="block text-xs text-muted-foreground">Current bid · {formatCountdown(now ? Number(lot.endTime) - now : 0)}</span>

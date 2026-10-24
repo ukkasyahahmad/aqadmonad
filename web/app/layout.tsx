@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "Aqad — real-time NFT auctions on Monad",
   description: "Mint a listing, auction it for MON, outbid refunds, anti-sniping. Monad Testnet. Unaudited.",
 };
+
+// viewport-fit=cover exposes env(safe-area-inset-*) for the mobile tab bar.
+export const viewport: Viewport = { viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

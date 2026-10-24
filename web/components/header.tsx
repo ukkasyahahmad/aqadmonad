@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { targetChain } from "@/lib/chain";
 import { auctionHouse } from "@/lib/contracts";
+import { BottomNav } from "./bottom-nav";
 import { LogoMark } from "./logo";
 import { RefundBanner } from "./refund-banner";
 import { WalletButton } from "./wallet";
@@ -37,18 +38,7 @@ export function Header() {
         </p>
       )}
       <RefundBanner />
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-card md:hidden">
-        {[
-          ["/", "Explore"],
-          ["/create", "Sell"],
-          ["/host", "Host"],
-          ["/account", "Account"],
-        ].map(([href, label]) => (
-          <Link key={href} href={href} className="flex h-14 flex-1 items-center justify-center text-sm font-semibold">
-            {label}
-          </Link>
-        ))}
-      </nav>
+      <BottomNav />
     </>
   );
 }
