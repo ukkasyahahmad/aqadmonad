@@ -12,8 +12,8 @@ Built for **Monad Blitz Jogja (24 Oct 2026)** with [MONSKILLS](https://skills.de
 |---|---|
 | Live app | https://aqadmonad.vercel.app |
 | Network | Monad Testnet · chain ID `10143` · RPC `https://testnet-rpc.monad.xyz` |
-| AuctionHouse | [`0x997a70a4eee09541F2079ab871C13A7778b58164`](https://testnet.monadvision.com/address/0x997a70a4eee09541F2079ab871C13A7778b58164) (block 73734653) · verified: MonadVision perfect match, Monadscan |
-| DemoNFT | [`0x9765f91714AE866D1ce406A5922e0641B1F20AE9`](https://testnet.monadvision.com/address/0x9765f91714AE866D1ce406A5922e0641B1F20AE9) (block 73734651) · verified: MonadVision perfect match, Monadscan |
+| AuctionHouse | [`0x3231cd2df88b70c687698fde7bbb7a3c31950e5f`](https://testnet.monadvision.com/address/0x3231cd2df88b70c687698fde7bbb7a3c31950e5f) (block 73769798) · verified: MonadVision perfect match, Monadscan |
+| DemoNFT | [`0x2fb727b1b1ccec990029e4214986e02440dc0fd9`](https://testnet.monadvision.com/address/0x2fb727b1b1ccec990029e4214986e02440dc0fd9) (block 73769795) · verified: MonadVision perfect match, Monadscan |
 | Explorer | https://testnet.monadvision.com |
 
 ## What it does
@@ -129,7 +129,7 @@ deploy `web/` to Vercel. Vercel env: `BLOB_READ_WRITE_TOKEN` (photo uploads), op
 | Check | Result |
 |---|---|
 | `forge build` | passes |
-| `forge test` | 52 unit/fuzz + 4 invariants pass (128,000 invariant calls, 0 reverts) |
+| `forge test` | 55 tests pass (unit/fuzz + invariants) (128,000 invariant calls, 0 reverts) |
 | `pnpm typecheck`, `pnpm lint`, `pnpm build` | pass |
 | Browser E2E on a local anvil chain (before switching the app to testnet-only): create → bid → outbid → withdraw → expire → settle | passed; NFT owner = winner, contract balance 0 after settlement |
 | `eth_sendRawTransactionSync`, `monadLogs` WebSocket, monskills faucet — probed on Monad Testnet | work (sync receipt 997 ms from Jogja; faucet sent 1 MON) |
