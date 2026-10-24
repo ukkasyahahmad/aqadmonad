@@ -192,7 +192,7 @@ export default function CreatePage() {
   const previewTitle = source === "mint" ? name || "Untitled item" : `Token #${tokenIdInput || "?"}`;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)_320px]">
+    <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
       {/* Step rail */}
       <aside className="space-y-4">
         <div>
@@ -434,17 +434,20 @@ export default function CreatePage() {
         )}
 
         {step === 6 && auctionId !== null && (
-          <div className="grid gap-6 sm:grid-cols-[1fr_220px]">
-            <div className="space-y-4">
-              <Notice tone="success" title={`Auction #${auctionId} is live on-chain`}>
-                The NFT is in escrow and the countdown has started. {createTx.hash && <TxLink hash={createTx.hash} />}
-              </Notice>
-              <div className="flex flex-wrap gap-3">
-                <Link href={`/auction/${auctionId}`}><Btn>Open auction <ArrowRight className="size-4" /></Btn></Link>
-                <Link href={`/screen/${auctionId}`}><Btn variant="secondary">Audience screen</Btn></Link>
+          <div className="space-y-6">
+            <Notice tone="success" title={`Auction #${auctionId} is live on-chain`}>
+              The NFT is in escrow and the countdown has started. {createTx.hash && <TxLink hash={createTx.hash} />}
+            </Notice>
+            <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+              <AuctionQr id={auctionId} className="w-44 shrink-0" />
+              <div className="min-w-0 space-y-3">
+                <p className="text-sm text-muted-foreground">Bidders scan this QR to open the auction on their phones.</p>
+                <div className="flex flex-wrap gap-3">
+                  <Link href={`/auction/${auctionId}`}><Btn>Open auction <ArrowRight className="size-4" /></Btn></Link>
+                  <Link href={`/screen/${auctionId}`} target="_blank"><Btn variant="secondary">Audience screen</Btn></Link>
+                </div>
               </div>
             </div>
-            <AuctionQr id={auctionId} />
           </div>
         )}
 
@@ -465,7 +468,7 @@ export default function CreatePage() {
       </Card>
 
       {/* Preview */}
-      <aside className="space-y-3">
+      <aside className="w-full max-w-sm space-y-3 lg:col-start-2 xl:col-start-auto xl:max-w-none">
         <p className="text-sm font-semibold text-muted-foreground">Listing preview</p>
         <div className="rounded-3xl border border-border bg-card p-3">
           <NftArt tokenId={tokenId ?? 0n} image={image ?? undefined} alt={previewTitle} />

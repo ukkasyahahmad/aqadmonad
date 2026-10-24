@@ -89,7 +89,11 @@ export function Notice({ tone = "neutral", title, children }: { tone?: "neutral"
   }[tone];
   return (
     <div role={tone === "danger" ? "alert" : "status"} className={cn("flex gap-3 rounded-2xl p-4 text-sm", cls)}>
-      <AlertTriangle className={cn("mt-0.5 size-4 shrink-0", tone === "neutral" && "hidden")} />
+      {tone === "success" ? (
+        <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
+      ) : (
+        <AlertTriangle className={cn("mt-0.5 size-4 shrink-0", tone === "neutral" && "hidden")} />
+      )}
       <div className="space-y-1">
         {title && <p className="font-semibold">{title}</p>}
         {children && <div className="leading-relaxed">{children}</div>}
@@ -126,7 +130,7 @@ export function Btn({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-secondary disabled:text-subtle-foreground disabled:border-transparent",
+        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-secondary disabled:text-subtle-foreground disabled:border-transparent",
         size === "lg" ? "h-[52px] px-5 text-[15px]" : "h-11 px-4 text-sm",
         btn[variant],
         className,
