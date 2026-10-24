@@ -12,8 +12,8 @@ Built for **Monad Blitz Jogja (24 Oct 2026)** with [MONSKILLS](https://skills.de
 |---|---|
 | Live app | https://web-jet-eight-40.vercel.app |
 | Network | Monad Testnet · chain ID `10143` · RPC `https://testnet-rpc.monad.xyz` |
-| AuctionHouse | _NOT YET DEPLOYED — filled in after the testnet deploy_ |
-| DemoNFT | _NOT YET DEPLOYED_ |
+| AuctionHouse | [`0x1c02b09817612dB8A6c8fba72BA5E871443A4740`](https://testnet.monadvision.com/address/0x1c02b09817612dB8A6c8fba72BA5E871443A4740) · verified on MonadVision & Monadscan |
+| DemoNFT | [`0xEea8e7eea7BE1d11B0C1FC9582c5b9753D049589`](https://testnet.monadvision.com/address/0xEea8e7eea7BE1d11B0C1FC9582c5b9753D049589) · verified on MonadVision & Monadscan |
 | Explorer | https://testnet.monadvision.com |
 
 ## What it does
@@ -133,7 +133,8 @@ deploy `web/` to Vercel. Vercel env: `BLOB_READ_WRITE_TOKEN` (photo uploads), op
 | `pnpm typecheck`, `pnpm lint`, `pnpm build` | pass |
 | Browser E2E on a local anvil chain (before switching the app to testnet-only): create → bid → outbid → withdraw → expire → settle | passed; NFT owner = winner, contract balance 0 after settlement |
 | `eth_sendRawTransactionSync`, `monadLogs` WebSocket, monskills faucet — probed on Monad Testnet | work (sync receipt 997 ms from Jogja; faucet sent 1 MON) |
-| Testnet deployment & verification | **NOT YET DONE** |
+| Testnet deployment (24 Oct 2026, blocks 73733729–73733753, deployer `0x7be1…3DBa`) | done — [DemoNFT tx](https://testnet.monadvision.com/tx/0xbfc502742a070f9685b23c34ba214b7171027d6ed72e147e769f7e46f32598e5), [AuctionHouse tx](https://testnet.monadvision.com/tx/0x75ccac1d68a2b9fbebac1088ad4e9b58a639f18063ace8425f348ae6532be8bd), 3 demo NFTs minted |
+| Verification (MONSKILLS verify API) | both contracts: MonadVision “perfect match”, Monadscan “Pass - Verified” |
 | MetaMask flow in a real browser wallet | **NOT VERIFIED** (no extension in the test browser) |
 
 ## Limitations
