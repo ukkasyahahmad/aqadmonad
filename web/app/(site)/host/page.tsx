@@ -23,7 +23,6 @@ export default function HostPage() {
   const now = useChainTime();
   const me = address?.toLowerCase();
   const mine = (data?.lots ?? []).filter((l) => l.seller.toLowerCase() === me);
-  const others = (data?.lots ?? []).filter((l) => l.seller.toLowerCase() !== me && lotState(l.status, l.endTime, now) === "awaiting");
 
   return (
     <div className="space-y-6">
@@ -31,7 +30,7 @@ export default function HostPage() {
         <div>
           <Eyebrow>Host console</Eyebrow>
           <h1 className="text-3xl font-semibold tracking-tight">Run the room</h1>
-          <p className="text-sm text-muted-foreground">Start a lot, put the QR on the big screen, settle when the clock hits zero.</p>
+          <p className="text-sm text-muted-foreground">Start a lot, put the QR on the big screen, close it yourself when the clock hits zero.</p>
         </div>
         <Link href="/create"><Btn><Plus className="size-4" /> New auction</Btn></Link>
       </div>
@@ -50,20 +49,11 @@ export default function HostPage() {
         </div>
       )}
 
-      {others.length > 0 && (
-        <Card className="space-y-3">
-          <h2 className="text-lg font-semibold">Other auctions awaiting settlement</h2>
-          <p className="text-sm text-muted-foreground">Settlement is permissionless — anyone can finish these.</p>
-          <div className="grid gap-3 md:grid-cols-2">
-            {others.map((l) => <HostLot key={l.id.toString()} lot={l} now={now} compact />)}
-          </div>
-        </Card>
-      )}
     </div>
   );
 }
 
-function HostLot({ lot, now, compact }: { lot: Lot; now: number | null; compact?: boolean }) {
+function HostLot({ lot, now }: { lot: Lot; now: number | null }) {
   const qc = useQueryClient();
   const settle = useTx();
   const cancel = useTx();
@@ -85,7 +75,7 @@ function HostLot({ lot, now, compact }: { lot: Lot; now: number | null; compact?
             {state === "live" || state === "ending" ? `Ends in ${formatCountdown(left)}` : state === "awaiting" ? "Expired — settle now" : lot.status}
           </p>
         </div>
-        {!compact && (state === "live" || state === "ending") && <AuctionQr id={lot.id} caption={false} className="w-24 shrink-0" />}
+        {(state === "live" || state === "ending") && <AuctionQr id={lot.id} caption={false} className="w-24 shrink-0" />}
       </div>
       <div className="flex flex-wrap gap-2">
         <Link href={`/auction/${lot.id}`}><Btn size="md" variant="secondary">Open</Btn></Link>
@@ -98,7 +88,7 @@ function HostLot({ lot, now, compact }: { lot: Lot; now: number | null; compact?
             {settle.phase === "confirming" ? "Settling…" : "Settle"}
           </Btn>
         )}
-        {!compact && lot.status === "Active" && lot.highestBid === 0n && (
+        {lot.status === "Active" && lot.highestBid === 0n && (
           <Btn size="md" variant="secondary" loading={cancel.busy} disabled={cancel.busy} onClick={async () => {
             await cancel.send({ address: auctionHouse!.address, abi: auctionHouse!.abi, functionName: "cancelAuction", args: [lot.id] });
             refresh();
