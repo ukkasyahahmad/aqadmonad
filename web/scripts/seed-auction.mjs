@@ -1,7 +1,7 @@
 // Stages a live demo auction on Monad Testnet without touching anyone's real keys:
 // a throwaway key is generated in memory (never printed or saved), funded with 1 test MON
 // from the MONSKILLS faucet, then mints a DemoNFT with metadata, approves and lists it.
-// Usage: node scripts/seed-auction.mjs [minutes=3] [name="Leica M6 rangefinder kit"]
+// Usage: [APP_URL=https://your-app] node scripts/seed-auction.mjs [minutes=3] [name="Leica M6 rangefinder kit"]
 import { createPublicClient, createWalletClient, http, parseEther, parseEventLogs } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { monadTestnet } from "viem/chains";
@@ -9,6 +9,7 @@ import { AuctionHouseAbi, DemoNFTAbi } from "../contracts/abis.ts";
 import deployed from "../contracts/deployedContracts.ts";
 
 const minutes = Number(process.argv[2] ?? 3);
+const appUrl = (process.env.APP_URL ?? "https://aqadmonad.vercel.app").replace(/\/$/, "");
 const name = process.argv[3] ?? "Leica M6 rangefinder kit";
 const d = deployed["10143"];
 if (!d) throw new Error("No Monad Testnet deployment in deployedContracts.ts");
@@ -63,6 +64,6 @@ const created = await send({
 });
 const [ev] = parseEventLogs({ abi: AuctionHouseAbi, eventName: "AuctionCreated", logs: created.logs });
 console.log(`Auction #${ev.args.id} live for ${minutes} min (token #${t.args.tokenId}, start 0.01 MON)`);
-console.log(`  bid:    https://aqadmonad.vercel.app/auction/${ev.args.id}`);
-console.log(`  screen: https://aqadmonad.vercel.app/screen/${ev.args.id}`);
+console.log(`  bid:    ${appUrl}/auction/${ev.args.id}`);
+console.log(`  screen: ${appUrl}/screen/${ev.args.id}`);
 console.log(`  tx:     https://testnet.monadvision.com/tx/${created.transactionHash}`);
