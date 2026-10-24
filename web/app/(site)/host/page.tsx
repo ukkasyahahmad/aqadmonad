@@ -7,7 +7,7 @@ import { useAccount } from "wagmi";
 import { lotTitle } from "@/components/auction-card";
 import { Btn, Card, Eyebrow, Notice, StatePill, TxLink, lotState } from "@/components/kit";
 import { NftArt } from "@/components/nft-art";
-import { AuctionQr } from "@/components/qr";
+import { AuctionQr, QrFullscreenButton } from "@/components/qr";
 import { WalletGate, useMounted } from "@/components/wallet";
 import { useAuctions, type Lot } from "@/hooks/use-auctions";
 import { useChainTime } from "@/hooks/use-chain-time";
@@ -32,7 +32,11 @@ export default function HostPage() {
           <h1 className="text-3xl font-semibold tracking-tight">Run the room</h1>
           <p className="text-sm text-muted-foreground">Start a lot, put the QR on the big screen, close it yourself when the clock hits zero.</p>
         </div>
-        <Link href="/create"><Btn><Plus className="size-4" /> New auction</Btn></Link>
+        <div className="flex flex-wrap gap-3">
+          {/* One QR for the whole event: /live follows whichever lot is running */}
+          <QrFullscreenButton id={0n} path="/live" title="Join the live auction" label="Event QR (/live)" className="h-[52px]" />
+          <Link href="/create"><Btn><Plus className="size-4" /> New auction</Btn></Link>
+        </div>
       </div>
 
       {!mounted ? null : !address ? (
@@ -80,6 +84,7 @@ function HostLot({ lot, now }: { lot: Lot; now: number | null }) {
       <div className="flex flex-wrap gap-2">
         <Link href={`/auction/${lot.id}`}><Btn size="md" variant="secondary">Open</Btn></Link>
         <Link href={`/screen/${lot.id}`} target="_blank"><Btn size="md" variant="secondary"><MonitorPlay className="size-4" /> Audience screen</Btn></Link>
+        {(state === "live" || state === "ending") && <QrFullscreenButton id={lot.id} title={lotTitle(lot)} />}
         {state === "awaiting" && (
           <Btn size="md" variant="dark" loading={settle.busy} disabled={settle.busy} onClick={async () => {
             await settle.send({ address: auctionHouse!.address, abi: auctionHouse!.abi, functionName: "endAuction", args: [lot.id] });

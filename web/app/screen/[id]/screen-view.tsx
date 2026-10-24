@@ -7,7 +7,7 @@ import { lotState, StatePill, TxLink } from "@/components/kit";
 import { Confetti } from "@/components/confetti";
 import { LogoMark } from "@/components/logo";
 import { NftArt } from "@/components/nft-art";
-import { AuctionQr } from "@/components/qr";
+import { AuctionQr, QrFullscreenButton } from "@/components/qr";
 import { useAnimatedWei } from "@/hooks/use-animated-wei";
 import { useAuction } from "@/hooks/use-auctions";
 import { useBidHistory } from "@/hooks/use-bid-history";
@@ -156,6 +156,13 @@ export function ScreenView({ raw }: { raw: string }) {
               <Radio className={`size-[1.6cqh] ${live.status === "live" ? "text-[#7FD3A4]" : ""}`} />
               {live.status === "live" ? "monadLogs" : "polling"}
             </span>
+            <QrFullscreenButton
+              id={lot.id}
+              path={state === "settled" || state === "cancelled" ? "/live" : undefined}
+              title={state === "settled" || state === "cancelled" ? "Join the next lot" : lotTitle(lot)}
+              label="QR"
+              className="h-[4cqh] gap-[0.6cqh] border-0 bg-[#1C211E] px-[1.4cqh] text-[1.5cqh] text-[#C9D0CB] hover:bg-[#2A302C]"
+            />
             <button
               onClick={() => setSoundOn((s) => (s ? false : enableSound()))}
               className="grid size-[4cqh] place-items-center rounded-full bg-[#1C211E] text-[#C9D0CB]"

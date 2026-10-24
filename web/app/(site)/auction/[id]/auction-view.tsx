@@ -8,7 +8,7 @@ import { BidHistory } from "@/components/bid-history";
 import { BidPanel } from "@/components/bid-panel";
 import { Card, Eyebrow, lotState } from "@/components/kit";
 import { NftArt } from "@/components/nft-art";
-import { AuctionQr } from "@/components/qr";
+import { AuctionQr, QrFullscreenButton } from "@/components/qr";
 import { WatchButton } from "@/components/watch-button";
 import { useAuction } from "@/hooks/use-auctions";
 import { useBidHistory } from "@/hooks/use-bid-history";
@@ -77,6 +77,7 @@ export function AuctionView({ rawId }: { rawId: string }) {
             <div className="space-y-1 text-sm">
               <p className="font-semibold">Scan to bid from a phone</p>
               <p className="text-muted-foreground">Opens this auction. No wallet? A quick-bid wallet with test MON is one tap away.</p>
+              <QrFullscreenButton id={lot.id} title={lotTitle(lot)} className="mt-1 h-9 px-3 text-xs" />
             </div>
           </Card>
 

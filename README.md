@@ -177,7 +177,7 @@ Set `APP_URL` to print links for another deployment.
 - Host wallet (MetaMask) holds **more than 10 MON** (Monad reserve-balance rule).
 - Create the lot 5 minutes before (`/create` or `seed-auction.mjs`), plus one spare lot.
 - Projector: `/screen/<id>` in fullscreen; turn sound on (speaker icon); start the speed probe.
-- Slide or printout with the QR for **`/live`**. Phone hotspot as a Wi-Fi backup.
+- QR for the room: **Host console → Event QR (/live)** opens a full-screen QR (or use **Fullscreen QR** on any lot). Phone hotspot as a Wi-Fi backup.
 
 **On stage**
 1. *Problem (20 s)* — auctions at events are slow and need trust in the auctioneer.

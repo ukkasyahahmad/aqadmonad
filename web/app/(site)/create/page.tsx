@@ -20,7 +20,7 @@ import { erc721Abi, isAddress, parseEventLogs } from "viem";
 import { useAccount, usePublicClient } from "wagmi";
 import { Btn, Card, Eyebrow, Field, Notice, TxLink, inputCls } from "@/components/kit";
 import { NftArt } from "@/components/nft-art";
-import { AuctionQr } from "@/components/qr";
+import { AuctionQr, QrFullscreenButton } from "@/components/qr";
 import { WalletGate } from "@/components/wallet";
 import { useTx } from "@/hooks/use-tx";
 import { auctionHouse, demoNft } from "@/lib/contracts";
@@ -445,6 +445,7 @@ export default function CreatePage() {
                 <div className="flex flex-wrap gap-3">
                   <Link href={`/auction/${auctionId}`}><Btn>Open auction <ArrowRight className="size-4" /></Btn></Link>
                   <Link href={`/screen/${auctionId}`} target="_blank"><Btn variant="secondary">Audience screen</Btn></Link>
+                  <QrFullscreenButton id={auctionId} title={previewTitle} className="h-[52px]" />
                 </div>
               </div>
             </div>
