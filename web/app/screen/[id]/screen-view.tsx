@@ -202,7 +202,7 @@ export function ScreenView({ raw }: { raw: string }) {
                 </p>
                 <p
                   key={finalCount ? left : "clock"}
-                  className={`font-mono text-[20cqh] font-semibold leading-none tabular-nums ${finalCount ? "pop-in text-[#E4ED72]" : ""}`}
+                  className={`whitespace-nowrap font-mono font-semibold leading-none tabular-nums ${left >= 3600 && state !== "awaiting" ? "text-[13cqh]" : "text-[20cqh]"} ${finalCount ? "pop-in text-[#E4ED72]" : ""}`}
                 >
                   {state === "awaiting" ? "00:00" : formatCountdown(left)}
                 </p>
