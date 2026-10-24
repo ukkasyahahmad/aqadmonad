@@ -23,4 +23,6 @@ cd web && pnpm install && pnpm dev
 Testnet MON: official faucet listed in Monad docs — https://faucet.monad.xyz
 (source: https://docs.monad.xyz/developer-essentials/testnets).
 
+Web shell (Vercel): https://web-jet-eight-40.vercel.app
+
 _Status: milestone 1 (scaffold). Contracts, deployment, and demo steps are added in later milestones._
