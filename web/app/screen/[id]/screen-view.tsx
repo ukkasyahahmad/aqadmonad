@@ -62,7 +62,7 @@ export function ScreenView({ raw }: { raw: string }) {
         <div className="flex min-h-0 flex-col gap-[2vh]">
           <div className="flex items-center gap-[1.2vh]">
             <LogoMark className="size-[5vh] ring-1 ring-[#2A302C] rounded-[1.2vh]" />
-            <span className="text-[2.6vh] font-semibold">Live Auction</span>
+            <span className="text-[2.6vh] font-semibold">Aqad</span>
             <span className="ml-auto text-[1.8vh] text-[#C9D0CB]">Auction #{lot.id.toString()} · {targetChain.name}</span>
           </div>
           <div className="relative min-h-0 flex-1">

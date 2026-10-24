@@ -7,7 +7,7 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 const mono = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Live Auction — real-time NFT auctions on Monad",
+  title: "Aqad — real-time NFT auctions on Monad",
   description: "Mint a listing, auction it for MON, outbid refunds, anti-sniping. Monad Testnet. Unaudited.",
 };
 

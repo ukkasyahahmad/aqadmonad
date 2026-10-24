@@ -12,7 +12,7 @@ export function Header() {
         <div className="mx-auto flex h-16 max-w-[1312px] items-center gap-3 px-4 sm:px-8">
           <Link href="/" className="flex items-center gap-2">
             <LogoMark />
-            <span className="text-[15px] font-semibold tracking-tight">Live Auction</span>
+            <span className="text-[15px] font-semibold tracking-tight">Aqad</span>
           </Link>
           <nav className="ml-6 hidden items-center gap-1 text-sm font-medium md:flex">
             <Link className="rounded-lg px-3 py-2 hover:bg-secondary" href="/">Explore</Link>

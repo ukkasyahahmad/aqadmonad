@@ -56,7 +56,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Design tokens from Design.md / html-design (Live Auction). */
+/* Design tokens from Design.md / html-design (Aqad). */
 :root {
   --background: #eef0ed;          /* bg */
   --foreground: #171a18;          /* text */

@@ -1,4 +1,4 @@
-# Live Auction — real-time NFT auctions on Monad
+# Aqad — real-time NFT auctions on Monad
 
 > **Unaudited. Testnet only. Do not use with real assets.**
 
@@ -12,8 +12,8 @@ Built for **Monad Blitz Jogja (24 Oct 2026)** with [MONSKILLS](https://skills.de
 |---|---|
 | Live app | https://web-jet-eight-40.vercel.app |
 | Network | Monad Testnet · chain ID `10143` · RPC `https://testnet-rpc.monad.xyz` |
-| AuctionHouse | [`0x997a70a4eee09541F2079ab871C13A7778b58164`](https://testnet.monadvision.com/address/0x997a70a4eee09541F2079ab871C13A7778b58164) (block 73734653) |
-| DemoNFT | [`0x9765f91714AE866D1ce406A5922e0641B1F20AE9`](https://testnet.monadvision.com/address/0x9765f91714AE866D1ce406A5922e0641B1F20AE9) (block 73734651) |
+| AuctionHouse | [`0x997a70a4eee09541F2079ab871C13A7778b58164`](https://testnet.monadvision.com/address/0x997a70a4eee09541F2079ab871C13A7778b58164) (block 73734653) · verified: MonadVision perfect match, Monadscan |
+| DemoNFT | [`0x9765f91714AE866D1ce406A5922e0641B1F20AE9`](https://testnet.monadvision.com/address/0x9765f91714AE866D1ce406A5922e0641B1F20AE9) (block 73734651) · verified: MonadVision perfect match, Monadscan |
 | Explorer | https://testnet.monadvision.com |
 
 ## What it does
@@ -133,7 +133,7 @@ deploy `web/` to Vercel. Vercel env: `BLOB_READ_WRITE_TOKEN` (photo uploads), op
 | `pnpm typecheck`, `pnpm lint`, `pnpm build` | pass |
 | Browser E2E on a local anvil chain (before switching the app to testnet-only): create → bid → outbid → withdraw → expire → settle | passed; NFT owner = winner, contract balance 0 after settlement |
 | `eth_sendRawTransactionSync`, `monadLogs` WebSocket, monskills faucet — probed on Monad Testnet | work (sync receipt 997 ms from Jogja; faucet sent 1 MON) |
-| Testnet deployment | done (24 Oct 2026); explorer source verification **NOT YET DONE** |
+| Testnet deployment + verification | done (24 Oct 2026); both contracts verified via the MONSKILLS verify API (MonadVision perfect match, Monadscan verified) |
 | Testnet E2E in a browser with MetaMask: `/create` mint → approve → create (auction #1) | passed; token #4 escrowed in AuctionHouse; `endAuction(1)` with no bids returned it to the seller |
 | Testnet E2E bidding (auction #2): quick-bid 0.05 → MetaMask outbid 0.0525 → quick-bid withdraw → settle from the page | passed; sync receipt 763 ms; `Withdrawn` 0.05 MON; NFT owner = winner; seller paid; AuctionHouse balance 0 |
 | Audience screen live feed on testnet (auction #3) | `monadLogs` WebSocket live; bid on screen 0.67 s after the phone tapped Confirm (before its own receipt), anti-sniping flash at 1.3 s; history after a reload in ~2 s |

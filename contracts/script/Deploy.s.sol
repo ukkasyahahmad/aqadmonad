@@ -19,7 +19,7 @@ contract Deploy is Script {
         }
         vm.stopBroadcast();
 
-        console.log("=== Live Auction deployment ===");
+        console.log("=== Aqad deployment ===");
         console.log("chainId      ", block.chainid);
         console.log("deployer     ", deployer);
         console.log("DemoNFT      ", address(nft));
