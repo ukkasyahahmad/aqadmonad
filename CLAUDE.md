@@ -1,6 +1,6 @@
 # CLAUDE.md: Aqad
 
-Live NFT auction for Monad Blitz Jogja (24 Oct 2026). Coding from 12:00, **freeze 18:00**. It must run live on **Monad testnet** at a real Vercel URL (https://web-jet-eight-40.vercel.app) with real MetaMask pop-ups. The product name in the UI is "Aqad".
+Live NFT auction for Monad Blitz Jogja (24 Oct 2026). Coding from 12:00, **freeze 18:00**. It must run live on **Monad testnet** at a real Vercel URL (https://aqadmonad.vercel.app) with real MetaMask pop-ups. The product name in the UI is "Aqad".
 
 **What it is:** sell anything by minting it as an NFT and auctioning it for native MON. Every bid locks real MON in the contract. When someone outbids you, your full bid is credited to you and you withdraw it in one tap (pull payment). Once the clock runs out, anyone can call `endAuction()`, which sends the NFT to the winner and the MON to the seller in one transaction. Not betting: no bid fees, outbid bidders get 100% back, no randomness. Never use gambling words in the UI ("win big", "jackpot", "lucky").
 
