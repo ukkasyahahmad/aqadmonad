@@ -12,8 +12,8 @@ Built for **Monad Blitz Jogja (24 Oct 2026)** with [MONSKILLS](https://skills.de
 |---|---|
 | Live app | https://web-jet-eight-40.vercel.app |
 | Network | Monad Testnet · chain ID `10143` · RPC `https://testnet-rpc.monad.xyz` |
-| AuctionHouse | _NOT YET DEPLOYED — filled in after the testnet deploy_ |
-| DemoNFT | _NOT YET DEPLOYED_ |
+| AuctionHouse | [`0x997a70a4eee09541F2079ab871C13A7778b58164`](https://testnet.monadvision.com/address/0x997a70a4eee09541F2079ab871C13A7778b58164) (block 73734653) |
+| DemoNFT | [`0x9765f91714AE866D1ce406A5922e0641B1F20AE9`](https://testnet.monadvision.com/address/0x9765f91714AE866D1ce406A5922e0641B1F20AE9) (block 73734651) |
 | Explorer | https://testnet.monadvision.com |
 
 ## What it does
@@ -133,8 +133,10 @@ deploy `web/` to Vercel. Vercel env: `BLOB_READ_WRITE_TOKEN` (photo uploads), op
 | `pnpm typecheck`, `pnpm lint`, `pnpm build` | pass |
 | Browser E2E on a local anvil chain (before switching the app to testnet-only): create → bid → outbid → withdraw → expire → settle | passed; NFT owner = winner, contract balance 0 after settlement |
 | `eth_sendRawTransactionSync`, `monadLogs` WebSocket, monskills faucet — probed on Monad Testnet | work (sync receipt 997 ms from Jogja; faucet sent 1 MON) |
-| Testnet deployment & verification | **NOT YET DONE** |
-| MetaMask flow in a real browser wallet | **NOT VERIFIED** (no extension in the test browser) |
+| Testnet deployment | done (24 Oct 2026); explorer source verification **NOT YET DONE** |
+| Testnet E2E in a browser with MetaMask: `/create` mint → approve → create (auction #1) | passed; token #4 escrowed in AuctionHouse; `endAuction(1)` with no bids returned it to the seller |
+| Testnet E2E bidding (auction #2): quick-bid 0.05 → MetaMask outbid 0.0525 → quick-bid withdraw → settle from the page | passed; sync receipt 763 ms; `Withdrawn` 0.05 MON; NFT owner = winner; seller paid; AuctionHouse balance 0 |
+| Audience screen live feed on testnet | **ISSUE**: `monadLogs` WebSocket did not connect (fell back to 2 s polling); bid list took ~15–20 s to fill after a reload |
 
 ## Limitations
 
