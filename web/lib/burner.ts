@@ -2,7 +2,7 @@
 
 import { createWalletClient, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount, type PrivateKeyAccount } from "viem/accounts";
-import { isLocal, localTransport, monadTransport, targetChain } from "./chain";
+import { monadTransport, targetChain } from "./chain";
 
 // Quick-bid wallet: a throwaway key generated in this browser and kept in localStorage so a
 // reload keeps the same wallet. It is NOT secure custody — test MON only. The key never leaves
@@ -27,7 +27,7 @@ export function createBurner(): PrivateKeyAccount {
 
 /** Wallet client signing locally, so writes can use eth_sendRawTransactionSync. */
 export function burnerClient(account: PrivateKeyAccount) {
-  return createWalletClient({ account, chain: targetChain, transport: isLocal ? localTransport : monadTransport });
+  return createWalletClient({ account, chain: targetChain, transport: monadTransport });
 }
 
 // Stable, human nickname derived from the address (no identity data stored).

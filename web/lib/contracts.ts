@@ -1,19 +1,13 @@
+import { AuctionHouseAbi, DemoNFTAbi } from "@/contracts/abis";
 import deployedContracts from "@/contracts/deployedContracts";
 import { targetChain } from "./chain";
 
-type Deployments = typeof deployedContracts;
-type ChainKey = keyof Deployments;
+// Addresses come from the generated deployedContracts.ts (keyed by chain ID); ABIs come
+// from the compiled Foundry artifacts. Nothing is hard-coded in components.
+const deployment = deployedContracts[String(targetChain.id)];
 
-// Addresses and ABIs come from the generated deployedContracts.ts, keyed by chain ID,
-// so a local deployment can never be used on Monad Testnet (or vice versa).
-const byChain = (deployedContracts as Record<string, Deployments[ChainKey]>)[String(targetChain.id)];
-
-export const contracts = byChain ?? null;
-export const auctionHouse = byChain?.AuctionHouse ?? null;
-export const demoNft = byChain?.DemoNFT ?? null;
-
-export type AuctionHouseAbi = Deployments[ChainKey]["AuctionHouse"]["abi"];
-export type DemoNftAbi = Deployments[ChainKey]["DemoNFT"]["abi"];
+export const auctionHouse = deployment ? { address: deployment.AuctionHouse.address, abi: AuctionHouseAbi } : null;
+export const demoNft = deployment ? { address: deployment.DemoNFT.address, abi: DemoNFTAbi } : null;
 
 export const STATUS = ["Active", "Ended", "Cancelled"] as const;
 export type StatusName = (typeof STATUS)[number];

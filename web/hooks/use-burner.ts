@@ -4,8 +4,6 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import type { PrivateKeyAccount } from "viem/accounts";
 import { useBalance, usePublicClient } from "wagmi";
 import { BURNER_KEY, createBurner, loadBurner } from "@/lib/burner";
-import { isLocal } from "@/lib/chain";
-import { parseEther } from "viem";
 
 const burnerListeners = new Set<() => void>();
 function subscribeBurner(cb: () => void) {
@@ -54,23 +52,15 @@ export function useBurner() {
     setError(null);
     setPhase("requesting");
     try {
-      if (isLocal) {
-        // Local anvil only: dev cheat to fund the burner.
-        await client!.request({
-          method: "anvil_setBalance" as never,
-          params: [account.address, `0x${parseEther("5").toString(16)}`] as never,
-        });
-      } else {
-        const res = await fetch("/api/faucet", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ address: account.address }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "Faucet failed.");
-        setFundTx(data.txHash);
-        await client!.waitForTransactionReceipt({ hash: data.txHash, pollingInterval: 250 });
-      }
+      const res = await fetch("/api/faucet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: account.address }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Faucet failed.");
+      setFundTx(data.txHash);
+      await client!.waitForTransactionReceipt({ hash: data.txHash, pollingInterval: 250 });
       setPhase("settling");
       await new Promise((r) => setTimeout(r, 1500));
       await refetch();

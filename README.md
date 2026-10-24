@@ -64,46 +64,41 @@ contracts/                 Foundry (solc 0.8.28, OpenZeppelin 5.4)
   src/AuctionHouse.sol     auction + escrow + pull refunds (no admin functions)
   src/DemoNFT.sol          free-mint ERC-721 with optional on-chain metadata
   test/                    unit, fuzz and stateful invariant tests
-  script/Deploy.s.sol      local deploy (DemoNFT, AuctionHouse, 3 demo NFTs)
+  script/Deploy.s.sol      deploy DemoNFT, AuctionHouse, mint 3 demo NFTs to the deployer
+  script/deploy-testnet.sh Monad Testnet deploy with an encrypted Foundry keystore
 web/                       Next.js 16 App Router, wagmi 3, viem 2.57, Tailwind 4
   lib/        domain + infrastructure: auction rules, formatting, chain/RPC, contracts,
               metadata codec, burner wallet  (no React)
   hooks/      application layer: data fetching, tx lifecycle, chain time, live feed
   components/ presentation (design tokens from html-design / Design.md)
   app/        routes; app/api/{upload,faucet} are the only server code
-  contracts/deployedContracts.ts   generated addresses + ABIs, keyed by chain ID
+  contracts/abis.ts, deployedContracts.ts   generated ABIs + Monad Testnet addresses
 ```
 
-Contract addresses are never hard-coded in components: `pnpm contracts:export` reads Foundry
-artifacts and writes `web/contracts/deployedContracts.ts` per chain ID, so a local deploy can't
-leak onto testnet.
+Contract addresses are never hard-coded in components: `pnpm contracts:export` reads the Foundry
+artifacts and the Monad Testnet broadcast, and writes `web/contracts/abis.ts` and
+`web/contracts/deployedContracts.ts`.
 
 ## Run it locally
 
-Requirements: Node 20+, pnpm, Foundry ≥ 1.8.
+Requirements: Node 20+, pnpm, Foundry ≥ 1.8. The web app always talks to **Monad Testnet**
+(official RPCs + `wss://testnet-rpc.monad.xyz`); there is no local-chain mode in the UI.
 
 ```sh
-# 1. contracts
+# contracts: build + tests (Foundry runs these in its own in-memory EVM)
 cd contracts
 ./install-deps.sh                 # OpenZeppelin v5.4.0 + forge-std v1.17.0 into lib/
 forge build
 forge test                        # 52 unit/fuzz tests + 4 invariants
 
-# 2. local chain + deploy (terminal 2)
-anvil --block-time 1
-forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --broadcast \
-  --unlocked --sender 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266   # anvil's public test account
-
-# 3. web
+# web: runs against the deployed Monad Testnet contracts
 cd ../web
 pnpm install
-pnpm contracts:export             # writes contracts/deployedContracts.ts
-NEXT_PUBLIC_CHAIN_ID=31337 pnpm dev
+pnpm dev                          # http://localhost:3000
 ```
 
-On the local chain the quick-bid wallet is funded with `anvil_setBalance`. To end an auction
-early locally: `cast rpc evm_increaseTime 300 && cast rpc evm_mine` (the browser countdown
-follows the chain's block time, not your clock).
+Photo uploads need `BLOB_READ_WRITE_TOKEN` in `web/.env.local` (`vercel env pull`);
+everything else works without configuration.
 
 ## Deploy to Monad Testnet
 
@@ -136,7 +131,8 @@ deploy `web/` to Vercel. Vercel env: `BLOB_READ_WRITE_TOKEN` (photo uploads), op
 | `forge build` | passes |
 | `forge test` | 52 unit/fuzz + 4 invariants pass (128,000 invariant calls, 0 reverts) |
 | `pnpm typecheck`, `pnpm lint`, `pnpm build` | pass |
-| Local browser E2E (anvil): mint → approve → create → bid → outbid → withdraw → expire → settle | passed; NFT owner = winner, contract balance 0 after settlement |
+| Browser E2E on a local anvil chain (before switching the app to testnet-only): create → bid → outbid → withdraw → expire → settle | passed; NFT owner = winner, contract balance 0 after settlement |
+| `eth_sendRawTransactionSync`, `monadLogs` WebSocket, monskills faucet — probed on Monad Testnet | work (sync receipt 997 ms from Jogja; faucet sent 1 MON) |
 | Testnet deployment & verification | **NOT YET DONE** |
 | MetaMask flow in a real browser wallet | **NOT VERIFIED** (no extension in the test browser) |
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPublicClient, decodeEventLog, encodeEventTopics, webSocket, type Log } from "viem";
-import { isLocal, targetChain } from "@/lib/chain";
+import { MONAD_WSS, targetChain } from "@/lib/chain";
 import { auctionHouse } from "@/lib/contracts";
 
 export type LiveBid = {
@@ -27,12 +27,12 @@ export function useLiveBids(id: bigint | null) {
   const [status, setStatus] = useState<"connecting" | "live" | "off">("connecting");
   const seen = useRef(new Set<string>());
 
-  const enabled = id !== null && !!auctionHouse && !isLocal;
+  const enabled = id !== null && !!auctionHouse;
 
   useEffect(() => {
     if (!enabled || id === null || !auctionHouse) return;
     const house = auctionHouse;
-    const client = createPublicClient({ chain: targetChain, transport: webSocket("wss://testnet-rpc.monad.xyz", { retryCount: 3 }) });
+    const client = createPublicClient({ chain: targetChain, transport: webSocket(MONAD_WSS, { retryCount: 3 }) });
     const topics = encodeEventTopics({ abi: house.abi, eventName: "BidPlaced", args: { id } });
     let unsub: (() => void) | undefined;
     let cancelled = false;

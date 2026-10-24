@@ -16,9 +16,6 @@ const ipHits = new Map<string, number[]>();
 const client = createPublicClient({ chain: monadTestnet, transport: monadTransport });
 
 export async function POST(req: Request) {
-  if (process.env.NEXT_PUBLIC_CHAIN_ID === "31337") {
-    return Response.json({ error: "Faucet is only available on Monad Testnet." }, { status: 400 });
-  }
   let body: unknown;
   try {
     body = await req.json();

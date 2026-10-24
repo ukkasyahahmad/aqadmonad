@@ -1,6 +1,6 @@
 import { Gavel } from "lucide-react";
 import Link from "next/link";
-import { isLocal, targetChain } from "@/lib/chain";
+import { targetChain } from "@/lib/chain";
 import { auctionHouse } from "@/lib/contracts";
 import { RefundBanner } from "./refund-banner";
 import { WalletButton } from "./wallet";
@@ -29,7 +29,7 @@ export function Header() {
         <div className="border-t border-border bg-accent">
           <p className="mx-auto max-w-[1312px] px-4 py-1.5 text-xs text-foreground sm:px-8">
             <span className="mr-2 rounded border border-foreground px-1 font-mono text-[10px] font-semibold">TESTNET</span>
-            Real transactions on {targetChain.name}{isLocal ? " (local)" : ""} with test MON. Unaudited — do not use real assets.
+            Real transactions on {targetChain.name} (chain {targetChain.id}) with test MON. Unaudited — do not use real assets.
           </p>
         </div>
       </header>
