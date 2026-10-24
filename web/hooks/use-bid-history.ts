@@ -45,11 +45,17 @@ export function useBidHistory(id: bigint | null, fromBlock: bigint | undefined) 
       for (let from = s.cursor; from <= latest && ranges.length < MAX_WINDOWS_PER_REFRESH; from += LOG_RANGE) {
         ranges.push([from, from + LOG_RANGE - 1n < latest ? from + LOG_RANGE - 1n : latest]);
       }
-      const results = await Promise.all(
-        ranges.map(([fromBlock, toBlock]) =>
-          client!.getLogs({ address: auctionHouse!.address, event: BidPlaced, args: { id: id! }, fromBlock, toBlock }),
-        ),
-      );
+      // ≤4 requests in flight: public Monad RPCs rate-limit bursts (HTTP 429).
+      const results = [];
+      for (let k = 0; k < ranges.length; k += 4) {
+        results.push(
+          ...(await Promise.all(
+            ranges.slice(k, k + 4).map(([fromBlock, toBlock]) =>
+              client!.getLogs({ address: auctionHouse!.address, event: BidPlaced, args: { id: id! }, fromBlock, toBlock }),
+            ),
+          )),
+        );
+      }
       for (const l of results.flat()) {
         s.bids.push({
           bidder: l.args.bidder!,

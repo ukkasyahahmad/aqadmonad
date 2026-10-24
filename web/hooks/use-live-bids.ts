@@ -58,27 +58,40 @@ export function useLiveBids(id: bigint | null) {
       } catch {}
     };
 
-    (async () => {
+    // (Re)subscribe with backoff: a 429 or dropped socket falls back to polling, then retries.
+    let retry: ReturnType<typeof setTimeout> | undefined;
+    let attempt = 0;
+    const connect = async () => {
       try {
         const { unsubscribe } = await client.transport.subscribe({
           params: ["monadLogs" as "logs", { address: house.address, topics }],
           onData: (d: { result?: Log } | Log) => onLog(("result" in d && d.result ? d.result : d) as Log),
-          onError: () => setStatus("off"),
+          onError: () => {
+            setStatus("off");
+            scheduleRetry();
+          },
         });
-        if (cancelled) unsubscribe();
-        else {
-          unsub = unsubscribe;
-          setStatus("live");
-        }
+        if (cancelled) return void unsubscribe();
+        unsub = unsubscribe;
+        attempt = 0;
+        setStatus("live");
       } catch {
         setStatus("off");
+        scheduleRetry();
       }
-    })();
+    };
+    const scheduleRetry = () => {
+      if (cancelled) return;
+      clearTimeout(retry);
+      retry = setTimeout(connect, Math.min(30_000, 2_000 * 2 ** attempt++));
+    };
+    void connect();
 
     // Only unsubscribe: viem shares one socket per URL, so closing it here would kill the
     // subscription of the next mount (React dev mounts effects twice).
     return () => {
       cancelled = true;
+      clearTimeout(retry);
       unsub?.();
     };
   }, [id, enabled]);

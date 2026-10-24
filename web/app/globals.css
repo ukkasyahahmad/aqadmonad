@@ -114,3 +114,28 @@
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after { animation: none !important; transition: none !important; }
 }
+
+/* Audience screen effects */
+@keyframes confetti-fall {
+  0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate3d(var(--dx), 110vh, 0) rotate(var(--rot)); opacity: 0.9; }
+}
+.confetti-piece {
+  position: absolute;
+  top: 0;
+  width: 1vh;
+  height: 1.6vh;
+  border-radius: 0.2vh;
+  animation: confetti-fall var(--dur) cubic-bezier(0.2, 0.6, 0.4, 1) var(--delay) both;
+}
+@keyframes bid-flash {
+  0% { box-shadow: 0 0 0 0 rgba(228, 237, 114, 0.9); background-color: #2b3218; }
+  100% { box-shadow: 0 0 0 3vh rgba(228, 237, 114, 0); background-color: #1c211e; }
+}
+.bid-flash { animation: bid-flash 1.2s ease-out; }
+@keyframes pop-in {
+  0% { transform: scale(0.9); opacity: 0; }
+  20% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.pop-in { animation: pop-in 0.5s ease-out; }
