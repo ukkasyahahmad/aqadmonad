@@ -1,9 +1,10 @@
 "use client";
 
-import { Gavel, Radio, Timer } from "lucide-react";
+import { Radio, Timer } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { lotTitle } from "@/components/auction-card";
 import { lotState, StatePill, TxLink } from "@/components/kit";
+import { LogoMark } from "@/components/logo";
 import { NftArt } from "@/components/nft-art";
 import { AuctionQr } from "@/components/qr";
 import { useAuction } from "@/hooks/use-auctions";
@@ -60,7 +61,7 @@ export function ScreenView({ raw }: { raw: string }) {
         {/* left: lot + QR */}
         <div className="flex min-h-0 flex-col gap-[2vh]">
           <div className="flex items-center gap-[1.2vh]">
-            <span className="grid size-[5vh] place-items-center rounded-[1.2vh] bg-[#E4ED72] text-[#171A18]"><Gavel className="size-[2.6vh]" /></span>
+            <LogoMark className="size-[5vh] ring-1 ring-[#2A302C] rounded-[1.2vh]" />
             <span className="text-[2.6vh] font-semibold">Live Auction</span>
             <span className="ml-auto text-[1.8vh] text-[#C9D0CB]">Auction #{lot.id.toString()} · {targetChain.name}</span>
           </div>

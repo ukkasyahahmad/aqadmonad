@@ -1,7 +1,7 @@
-import { Gavel } from "lucide-react";
 import Link from "next/link";
 import { targetChain } from "@/lib/chain";
 import { auctionHouse } from "@/lib/contracts";
+import { LogoMark } from "./logo";
 import { RefundBanner } from "./refund-banner";
 import { WalletButton } from "./wallet";
 
@@ -11,9 +11,7 @@ export function Header() {
       <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-[1312px] items-center gap-3 px-4 sm:px-8">
           <Link href="/" className="flex items-center gap-2">
-            <span className="grid size-[30px] place-items-center rounded-[9px] bg-primary">
-              <Gavel className="size-4" />
-            </span>
+            <LogoMark />
             <span className="text-[15px] font-semibold tracking-tight">Live Auction</span>
           </Link>
           <nav className="ml-6 hidden items-center gap-1 text-sm font-medium md:flex">
